@@ -16,7 +16,7 @@ const account1 = {
   movements: [200, 450, -400, 3000, -650, -130, 70, 1300],
   interestRate: 1.2, // %
   pin: 1111,
-  senders: new Map(),
+  movsDescriptions: [null, null, null, null, null, null, null, null],
 };
 
 const account2 = {
@@ -24,7 +24,7 @@ const account2 = {
   movements: [5000, 3400, -150, -790, -3210, -1000, 8500, -30],
   interestRate: 1.5,
   pin: 2222,
-  senders: new Map(),
+  movsDescriptions: [null, null, null, null, null, null, null, null],
 };
 
 const account3 = {
@@ -32,7 +32,7 @@ const account3 = {
   movements: [200, -200, 340, -300, -20, 50, 400, -460],
   interestRate: 0.7,
   pin: 3333,
-  senders: new Map(),
+  movsDescriptions: [null, null, null, null, null, null, null, null],
 };
 
 const account4 = {
@@ -40,7 +40,7 @@ const account4 = {
   movements: [430, 1000, 700, 50, 90],
   interestRate: 1,
   pin: 4444,
-  senders: new Map(),
+  movsDescriptions: [null, null, null, null, null],
 };
 
 const account5 = {
@@ -48,7 +48,7 @@ const account5 = {
   movements: [1300, -2000, 3900, 15020, 2],
   interestRate: 1,
   pin: 5555,
-  senders: new Map(),
+  movsDescriptions: [null, null, null, null, null],
 };
 
 const accounts = [account1, account2, account3, account4, account5];
@@ -136,11 +136,11 @@ const displayMovements = function(movements, sort = 0) {
 
   movs.forEach(function(mov, i) {
     const type = mov > 0 ? 'deposit' : 'withdrawal';
-    const sender = currentAccount.senders?.get(i) || 'Unknown';
+    const desc = currentAccount.movsDescriptions[i] ?? 'Unknown';
     const html = `
       <div class="movements__row">
         <div class="movements__type movements__type--${type}">${i + 1} ${type}</div>
-        <div class='movements__sender'>${type === 'deposit' ? 'from' : 'to'}: ${sender}</div>
+        <div class='movements__sender'>${type === 'deposit' ? 'from' : 'to'}: ${desc}</div>
         <div class="movements__value">${mov}€</div>
       </div>
     `;
@@ -208,7 +208,7 @@ btnLoan.addEventListener('click', function(e) {
   if(amount > 0 && currentAccount.movements.some(mov => mov >= amount * 0.1)) {
     currentAccount.movements.push(amount);
 
-    currentAccount.senders.set(currentAccount.movements.length - 1, 'Bank');
+    currentAccount.movsDescriptions.push('Bank');
 
     updateUI();
     inputLoanAmount.value = '';
@@ -231,8 +231,8 @@ btnTransfer.addEventListener('click', function(e) {
     currentAccount.movements.push(-amount);
     receiverAcc.movements.push(amount);
 
-    currentAccount.senders.set(currentAccount.movements.length - 1, receiverAcc.owner);
-    receiverAcc.senders.set(receiverAcc.movements.length - 1, currentAccount.owner);
+    currentAccount.movsDescriptions.push(receiverAcc.owner);
+    receiverAcc.movsDescriptions.push(currentAccount.owner);
 
     updateUI();
 
