@@ -16,7 +16,7 @@ const account1 = {
   movements: [200, 450, -400, 3000, -650, -130, 70, 1300],
   interestRate: 1.2, // %
   pin: 1111,
-  movsDescriptions: [null, null, null, null, null, null, null, null],
+  movsDesc: new Map(),
 };
 
 const account2 = {
@@ -24,7 +24,7 @@ const account2 = {
   movements: [5000, 3400, -150, -790, -3210, -1000, 8500, -30],
   interestRate: 1.5,
   pin: 2222,
-  movsDescriptions: [null, null, null, null, null, null, null, null],
+  movsDesc: new Map(),
 };
 
 const account3 = {
@@ -32,7 +32,7 @@ const account3 = {
   movements: [200, -200, 340, -300, -20, 50, 400, -460],
   interestRate: 0.7,
   pin: 3333,
-  movsDescriptions: [null, null, null, null, null, null, null, null],
+  movsDesc: new Map(),
 };
 
 const account4 = {
@@ -40,7 +40,7 @@ const account4 = {
   movements: [430, 1000, 700, 50, 90],
   interestRate: 1,
   pin: 4444,
-  movsDescriptions: [null, null, null, null, null],
+  movsDesc: new Map(),
 };
 
 const account5 = {
@@ -48,7 +48,7 @@ const account5 = {
   movements: [1300, -2000, 3900, 15020, 2],
   interestRate: 1,
   pin: 5555,
-  movsDescriptions: [null, null, null, null, null],
+  movsDesc: new Map()
 };
 
 const accounts = [account1, account2, account3, account4, account5];
@@ -107,6 +107,8 @@ const displayNotification = function(info, type = 'error') {
   }, 7000);
 }
 
+const generateTransferID = (movements, amount) => `${amount > 0 ? 'deposit' : 'withdrawal'}${movements.length}`;
+
 const createUsernames = function (accs) {
   accs.forEach(function (account) {
     account.username = account.owner
@@ -122,26 +124,27 @@ createUsernames(accounts);
 const displayMovements = function(movements, sort = 0) {
   containerMovements.innerHTML = '';
 
-  let movs;
+ let movs;
   switch(sort) {
     case 1:
-      movs = movements.slice().sort((a, b) => a - b);
+      movs = movements.map((el, i) => [el, i]).sort((a, b) => a[0] - b[0]);
       break;
     case 2:
-      movs = movements.slice().sort((a, b) => b - a);
+      movs = movements.map((el, i) => [el, i]).sort((a, b) => b[0] - a[0]);
       break;
     default:
-      movs = movements;
+      movs = movements.map((el, i) => [el, i]);
   }
 
   movs.forEach(function(mov, i) {
-    const type = mov > 0 ? 'deposit' : 'withdrawal';
-    const desc = currentAccount.movsDescriptions[i] ?? 'Unknown';
+    console.log(mov);
+    const type = mov[0] > 0 ? 'deposit' : 'withdrawal';
+    const description = currentAccount.movsDesc.get(mov[1]) || 'Unknown';
     const html = `
       <div class="movements__row">
         <div class="movements__type movements__type--${type}">${i + 1} ${type}</div>
-        <div class='movements__sender'>${type === 'deposit' ? 'from' : 'to'}: ${desc}</div>
-        <div class="movements__value">${mov}€</div>
+        <div class='movements__sender'>${type === 'deposit' ? 'from' : 'to'}: ${description}</div>
+        <div class="movements__value">${mov[0]}€</div>
       </div>
     `;
 
@@ -168,7 +171,7 @@ const calcDisplaySummary = function (account) {
 
 const updateUI = function() {
   // Display account's movements
-  displayMovements(currentAccount.movements);
+  displayMovements(currentAccount.movements, currentAccount.movsDesc);
 
   // Calculate and display balance
   calcPrintBalance(currentAccount);
@@ -209,7 +212,7 @@ btnLoan.addEventListener('click', function(e) {
   if(amount > 0 && currentAccount.movements.some(mov => mov >= amount * 0.1)) {
     currentAccount.movements.push(amount);
 
-    currentAccount.movsDescriptions.push('Bank');
+    currentAccount.movsDesc.set(currentAccount.movements.length - 1, 'Bank');
 
     updateUI();
     inputLoanAmount.value = '';
@@ -232,8 +235,8 @@ btnTransfer.addEventListener('click', function(e) {
     currentAccount.movements.push(-amount);
     receiverAcc.movements.push(amount);
 
-    currentAccount.movsDescriptions.push(receiverAcc.owner);
-    receiverAcc.movsDescriptions.push(currentAccount.owner);
+    currentAccount.movsDesc.set(currentAccount.movements.length - 1, receiverAcc.owner);
+    receiverAcc.movsDesc.set(receiverAcc.movements.length - 1, currentAccount.owner);
 
     updateUI();
 
