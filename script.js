@@ -195,6 +195,7 @@ btnLogin.addEventListener('click', function(e) {
     inputLoginUsername.value = inputLoginPin.value = '';
     inputLoginUsername.blur();
     inputLoginPin.blur();
+    displayNotification(`Welcome, ${currentAccount.owner}!`, 'success');
   } else {
     displayNotification('Wrong credentials!');
   }
@@ -213,7 +214,7 @@ btnLoan.addEventListener('click', function(e) {
     updateUI();
     inputLoanAmount.value = '';
 
-    displayNotification( 'Money will be transfered soon!', 'success');
+    displayNotification( `Your request for ${amount}€ loan has been approved!`, 'success');
   } else if(amount <= 0) {
     displayNotification('Requested amount must be at least 1€!');
   } else {
@@ -237,7 +238,7 @@ btnTransfer.addEventListener('click', function(e) {
     updateUI();
 
     // Display success notification
-    displayNotification('Transfer successful!', 'success');
+    displayNotification(`You successfuly transfered ${amount}€ to ${receiverAcc.owner}!`, 'success');
   } else if (!receiverAcc?.username) {
     displayNotification('Receiver does not exist!');
   } else if (amount <= 0) {

@@ -46,23 +46,23 @@ button:focus {
   align-items: center;
   position: absolute;
   left: 50%;
-  bottom: 10%;
+  bottom: 12%;
   width: 35%;
   transform: translateX(-50%);
   border-radius: 1rem;
   padding: 2.5rem;
   text-align: center;
   transition: all .25s ease-in-out;
-  box-shadow: 0 3px 10px 3px rgba(0, 0, 0, .15);
-  /*animation: popUp 2.5s ease-in;*/
 }
 
 .notification--error {
   background-image: linear-gradient(to top left, #e52a5a, #ff585f);
+  box-shadow: 0 3px 30px 10px rgba(229, 42, 90, .4);
 }
 
 .notification--success {
   background-image: linear-gradient(to top left, #39b385, #9be15d);
+  box-shadow: 0 3px 30px 10px rgba(59, 179, 133, .4);
 }
 
 .notification__info {
@@ -375,12 +375,12 @@ h2 {
 }
 
 .pop {
-  animation: popUp .75s cubic-bezier(1,.06,.54,1);
+  animation: popUp 1.5s cubic-bezier(.52,.14,.01,.99);
 }
 
 @keyframes popUp {
   from {
-    transform: translate(-50%, 20rem);
+    transform: translate(-50%, 23rem);
   }
 
   to {
