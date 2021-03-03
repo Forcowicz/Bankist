@@ -4,6 +4,9 @@
 /////////////////////////////////////////////////
 // BANKIST APP
 
+// Display notifications
+let notifications = true;
+
 // Account holder
 let currentAccount;
 
@@ -79,32 +82,41 @@ const inputLoanAmount = document.querySelector('.form__input--loan-amount');
 const inputCloseUsername = document.querySelector('.form__input--user');
 const inputClosePin = document.querySelector('.form__input--pin');
 
+const notificationsSwitch = document.getElementById('notifications-switch');
 const notificationContainer = document.querySelector('.notification');
 const labelNotification = document.querySelector('.notification__info');
 const notificationBtnClose = document.querySelector('.notification__btn');
 
+// Notifications' switch
+notificationsSwitch.addEventListener('click', function() {
+  notificationsSwitch.classList.toggle('notifications-switch--active');
+  notifications = !notifications;
+});
+
 const displayNotification = function(info, type = 'error') {
-  clearTimeout(hideNotification);
+  if(notifications) {
+    clearTimeout(hideNotification);
 
-  // Check the notification character
-  if(type === 'error') {
-    notificationContainer.classList.add('notification--error');
-    notificationContainer.classList.remove('notification--success');
-  } else {
-    notificationContainer.classList.add('notification--success');
-    notificationContainer.classList.remove('notification--error');
-  }
-
-  notificationContainer.classList.add('pop');
-  notificationContainer.classList.remove('hidden');
-  labelNotification.textContent = info;
-
-  hideNotification = setTimeout(function() {
-    if (!notificationContainer.classList.contains('hidden')) {
-      notificationContainer.classList.add('hidden');
-      notificationContainer.classList.remove('pop');
+    // Check the notification character
+    if (type === 'error') {
+      notificationContainer.classList.add('notification--error');
+      notificationContainer.classList.remove('notification--success');
+    } else {
+      notificationContainer.classList.add('notification--success');
+      notificationContainer.classList.remove('notification--error');
     }
-  }, 7000);
+
+    notificationContainer.classList.add('pop');
+    notificationContainer.classList.remove('hidden');
+    labelNotification.textContent = info;
+
+    hideNotification = setTimeout(function() {
+      if (!notificationContainer.classList.contains('hidden')) {
+        notificationContainer.classList.add('hidden');
+        notificationContainer.classList.remove('pop');
+      }
+    }, 7000);
+  }
 }
 
 const generateTransferID = (movements, amount) => `${amount > 0 ? 'deposit' : 'withdrawal'}${movements.length}`;
@@ -137,7 +149,6 @@ const displayMovements = function(movements, sort = 0) {
   }
 
   movs.forEach(function(mov, i) {
-    console.log(mov);
     const type = mov[0] > 0 ? 'deposit' : 'withdrawal';
     const description = currentAccount.movsDesc.get(mov[1]) || 'Unknown';
     const html = `

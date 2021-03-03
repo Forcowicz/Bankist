@@ -24,6 +24,7 @@
           type="text"
           placeholder="user"
           class="login__input login__input--user"
+          accesskey="s"
         />
         <!-- In practice, use type="password" -->
         <input
@@ -31,6 +32,7 @@
           placeholder="PIN"
           maxlength="4"
           class="login__input login__input--pin"
+          accesskey="d"
         />
         <button class="login__btn">&rarr;</button>
       </form>
@@ -111,6 +113,14 @@
     <div class='notification hidden'>
       <p class='notification__info'>This is a placeholder.</p>
       <button class='notification__btn'>Close</button>
+    </div>
+
+    <div class='notifications-switch notifications-switch--active' id='notifications-switch'>
+      <div class='notifications-switch__switch'>
+        <span class='notifications-switch__square'></span>
+      </div>
+      <div class='notifications-switch__caption-hider'></div>
+      <span class='notifications-switch__caption'>Notifications?</span>
     </div>
 
     <!-- <footer>
