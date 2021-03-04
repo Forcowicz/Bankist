@@ -3,6 +3,7 @@
 /////////////////////////////////////////////////
 /////////////////////////////////////////////////
 // BANKIST APP
+// TODO: Cash request
 
 // Display notifications
 let notifications = true;
@@ -19,7 +20,7 @@ const account1 = {
   movements: [200, 450, -400, 3000, -650, -130, 70, 1300],
   interestRate: 1.2, // %
   pin: 1111,
-  movsDesc: new Map(),
+  movsDesc: new Map([[0, {}], [1, {}], [2, {}], [3, {}], [4, {}], [5, {}], [6, {}], [7, {}]])
 };
 
 const account2 = {
@@ -27,7 +28,7 @@ const account2 = {
   movements: [5000, 3400, -150, -790, -3210, -1000, 8500, -30],
   interestRate: 1.5,
   pin: 2222,
-  movsDesc: new Map(),
+  movsDesc: new Map([[0, {}], [1, {}], [2, {}], [3, {}], [4, {}], [5, {}], [6, {}], [7, {}], [8, {}]])
 };
 
 const account3 = {
@@ -35,7 +36,7 @@ const account3 = {
   movements: [200, -200, 340, -300, -20, 50, 400, -460],
   interestRate: 0.7,
   pin: 3333,
-  movsDesc: new Map(),
+  movsDesc: new Map([[0, {}], [1, {}], [2, {}], [3, {}], [4, {}], [5, {}], [6, {}], [7, {}]])
 };
 
 const account4 = {
@@ -43,7 +44,7 @@ const account4 = {
   movements: [430, 1000, 700, 50, 90],
   interestRate: 1,
   pin: 4444,
-  movsDesc: new Map(),
+  movsDesc: new Map([[0, {}], [1, {}], [2, {}], [3, {}], [4, {}]])
 };
 
 const account5 = {
@@ -51,7 +52,7 @@ const account5 = {
   movements: [1300, -2000, 3900, 15020, 2],
   interestRate: 1,
   pin: 5555,
-  movsDesc: new Map()
+  movsDesc: new Map([[0, {}], [1, {}], [2, {}], [3, {}], [4, {}]])
 };
 
 const accounts = [account1, account2, account3, account4, account5];
@@ -82,6 +83,7 @@ const inputLoanAmount = document.querySelector('.form__input--loan-amount');
 const inputCloseUsername = document.querySelector('.form__input--user');
 const inputClosePin = document.querySelector('.form__input--pin');
 
+const notificationsSwitchContainer = document.getElementById('notifications-switch-container');
 const notificationsSwitch = document.getElementById('notifications-switch');
 const notificationContainer = document.querySelector('.notification');
 const labelNotification = document.querySelector('.notification__info');
@@ -89,7 +91,7 @@ const notificationBtnClose = document.querySelector('.notification__btn');
 
 // Notifications' switch
 notificationsSwitch.addEventListener('click', function() {
-  notificationsSwitch.classList.toggle('notifications-switch--active');
+  notificationsSwitchContainer.classList.toggle('notifications-switch--active');
   notifications = !notifications;
 });
 
@@ -119,8 +121,6 @@ const displayNotification = function(info, type = 'error') {
   }
 }
 
-const generateTransferID = (movements, amount) => `${amount > 0 ? 'deposit' : 'withdrawal'}${movements.length}`;
-
 const createUsernames = function (accs) {
   accs.forEach(function (account) {
     account.username = account.owner
@@ -132,6 +132,30 @@ const createUsernames = function (accs) {
 };
 
 createUsernames(accounts);
+
+const displayMovementsDetails = function(movements) {
+  movements.forEach(function(mov, i) {
+    const [currentIndex, movementDescriptionObject] = [...currentAccount.movsDesc].find(arr => arr[1].currentIndex === i);
+    const movementDetailsDOM = document.querySelector(`#movement${currentIndex} > .movements__details`);
+
+    const html = `
+      <span class='movements__column-element'>${mov[0] > 0 ? 'Received from' : 'Sent to'}: ${movementDescriptionObject.source || 'Initial'}</span>
+      ${movementDescriptionObject.message ? `<span class='movements__column-element'>Message: ${movementDescriptionObject.message}</span>` : ''}
+      <span class='movements__column-element'>Date: Today</span>
+    `;
+
+    document.getElementById(`movement${currentIndex}`).addEventListener('click', function() {
+      if (movementDetailsDOM.classList.contains('movements__details--active')) {
+        movementDetailsDOM.innerHTML = '';
+      } else {
+        movementDetailsDOM.insertAdjacentHTML('afterbegin', html);
+        document.querySelectorAll(`.${movementDetailsDOM.className} > .movements__column-element`).forEach(el => setTimeout(() => el.style.opacity = '1', 150));
+      }
+      movementDetailsDOM.classList.toggle('movements__details--active');
+    });
+    console.log(currentIndex, movementDetailsDOM.className, movementDescriptionObject);
+  });
+}
 
 const displayMovements = function(movements, sort = 0) {
   containerMovements.innerHTML = '';
@@ -150,17 +174,22 @@ const displayMovements = function(movements, sort = 0) {
 
   movs.forEach(function(mov, i) {
     const type = mov[0] > 0 ? 'deposit' : 'withdrawal';
-    const description = currentAccount.movsDesc.get(mov[1]) || 'Unknown';
+    let description = currentAccount.movsDesc.get(mov[1]);
+    description.currentIndex = i;
     const html = `
-      <div class="movements__row">
-        <div class="movements__type movements__type--${type}">${i + 1} ${type}</div>
-        <div class='movements__sender'>${type === 'deposit' ? 'from' : 'to'}: ${description}</div>
-        <div class="movements__value">${mov[0]}€</div>
+      <div class="movements__row" id=movement${mov[1]}>
+        <div class='movements__main'>
+          <div class="movements__type movements__type--${type}">${i + 1} ${type}</div>
+          <div class='movements__sender'>${type === 'deposit' ? 'from' : 'to'}: ${description?.source || 'Unknown'}</div>
+          <div class="movements__value">${mov[0]}€</div>
+        </div>
+        <div class='movements__details'></div>
       </div>
     `;
 
     containerMovements.insertAdjacentHTML('afterbegin', html);
   });
+  displayMovementsDetails(movs);
 }
 
 const calcPrintBalance = function (acc) {
@@ -209,6 +238,11 @@ btnLogin.addEventListener('click', function(e) {
     inputLoginUsername.value = inputLoginPin.value = '';
     inputLoginUsername.blur();
     inputLoginPin.blur();
+
+    // document.querySelector('#movement0').addEventListener('click', function() {
+    //   document.querySelector(`#movement0 > .movements__details`).classList.toggle('movements__details--active');
+    // });
+
     displayNotification(`Welcome, ${currentAccount.owner}!`, 'success');
   } else {
     displayNotification('Wrong credentials!');
@@ -223,7 +257,7 @@ btnLoan.addEventListener('click', function(e) {
   if(amount > 0 && currentAccount.movements.some(mov => mov >= amount * 0.1)) {
     currentAccount.movements.push(amount);
 
-    currentAccount.movsDesc.set(currentAccount.movements.length - 1, 'Bank');
+    currentAccount.movsDesc.set(currentAccount.movements.length - 1, {source: 'Bank'});
 
     updateUI();
     inputLoanAmount.value = '';
@@ -240,14 +274,16 @@ btnTransfer.addEventListener('click', function(e) {
   e.preventDefault();
 
   const amount = Number(inputTransferAmount.value);
+  const message = prompt('Would you like to add a message?');
   const receiverAcc = accounts.find(acc => acc.username === inputTransferTo.value);
 
   if (amount > 0 && currentAccount.balance >= amount && receiverAcc?.username && receiverAcc.username !== currentAccount.username) {
+
     currentAccount.movements.push(-amount);
     receiverAcc.movements.push(amount);
 
-    currentAccount.movsDesc.set(currentAccount.movements.length - 1, receiverAcc.owner);
-    receiverAcc.movsDesc.set(receiverAcc.movements.length - 1, currentAccount.owner);
+    currentAccount.movsDesc.set(currentAccount.movements.length - 1, {source: receiverAcc.owner, message});
+    receiverAcc.movsDesc.set(receiverAcc.movements.length - 1, {source: currentAccount.owner, message});
 
     updateUI();
 
@@ -313,3 +349,13 @@ notificationBtnClose.addEventListener('click', function() {
 ////// LECTURES
 
 const movements = [200, 450, -400, 3000, -650, -130, 70, 1300];
+
+// const numDeposits1000 = accounts.flatMap(acc => acc.movements).filter(mov => mov > 1000).length;
+const convertTitleCase = function(title) {
+  const capitalizeString = str => `${str[0].toUpperCase()}${str.slice(1)}`;
+  const exceptions = ['a', 'an', 'the', 'but', 'or', 'on', 'in', 'with'];
+
+  const titleCase = title.toLowerCase().split(' ').map(word => exceptions.includes(word) ? word : capitalizeString(word));
+  return capitalizeString(titleCase.join(' '));
+}
+console.log(convertTitleCase('Hello my name is Mark and I live an the england hehe thanks'));
