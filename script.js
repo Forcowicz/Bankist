@@ -55,7 +55,15 @@ const account5 = {
   movsDesc: new Map([[0, {}], [1, {}], [2, {}], [3, {}], [4, {}]])
 };
 
-const accounts = [account1, account2, account3, account4, account5];
+const account6 = {
+  owner: 'Michał Wojtusiak',
+  movements: [300, -500, 100, 1, 20, -15, -300, 1337],
+  interestRate: 1,
+  pin: 5555,
+  movsDesc: new Map([[0, {}], [1, {}], [2, {}], [3, {}], [4, {}], [5, {}], [6, {}], [7, {}]])
+};
+
+const accounts = [account1, account2, account3, account4, account5, account6];
 
 // Elements
 const labelWelcome = document.querySelector('.welcome');
@@ -134,12 +142,13 @@ const createUsernames = function (accs) {
 createUsernames(accounts);
 
 const displayMovementsDetails = function(movements) {
-  movements.forEach(function(mov, i) {
-    const [currentIndex, movementDescriptionObject] = [...currentAccount.movsDesc].find(arr => arr[1].currentIndex === i);
+  movements.forEach(function(mov) {
+    const [value, currentIndex] = mov;
+    const movementDescriptionObject = currentAccount.movsDesc.get(currentIndex);
     const movementDetailsDOM = document.querySelector(`#movement${currentIndex} > .movements__details`);
 
     const html = `
-      <span class='movements__column-element'>${mov[0] > 0 ? 'Received from' : 'Sent to'}: ${movementDescriptionObject.source || 'Initial'}</span>
+      <span class='movements__column-element'>${value > 0 ? 'Received from' : 'Sent to'}: ${movementDescriptionObject.source || 'Initial'}</span>
       ${movementDescriptionObject.message ? `<span class='movements__column-element'>Message: ${movementDescriptionObject.message}</span>` : ''}
       <span class='movements__column-element'>Date: Today</span>
     `;
@@ -153,7 +162,6 @@ const displayMovementsDetails = function(movements) {
       }
       movementDetailsDOM.classList.toggle('movements__details--active');
     });
-    console.log(currentIndex, movementDetailsDOM.className, movementDescriptionObject);
   });
 }
 
@@ -266,7 +274,7 @@ btnLoan.addEventListener('click', function(e) {
   } else if(amount <= 0) {
     displayNotification('Requested amount must be at least 1€!');
   } else {
-    displayNotification(`The maximum loan you can take is ${currentAccount.movements.reduce((acc, mov) => (mov > acc ? (acc = mov) : acc),0) * 10}€!`);
+    displayNotification(`The maximum loan you can take is ${currentAccount.movements.reduce((acc, mov) => mov > acc ? acc = mov : acc, 0) * 10}€!`);
   }
 });
 
