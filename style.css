@@ -274,6 +274,23 @@ button:focus {
   background-color: #f6f6f6;
 }
 
+.movements__type {
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  font-weight: 500;
+  color: #fff;
+  padding: 0.1rem 1rem;
+  border-radius: 10rem;
+  margin-right: 2rem;
+}
+
+.movements__date {
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  font-weight: 500;
+  color: #666;
+}
+
 .movements__main {
   width: 100%;
   display: flex;
@@ -303,44 +320,14 @@ button:focus {
   display: initial;
 }
 
-/*.movements__column {*/
-/*  display: inline-block;*/
-/*  padding: 2rem;*/
-/*  text-align: center;*/
-/*  width: 50%;*/
-/*}*/
-
 .movements__column-element {
-  display: inline-block;
-  font-size: 1.4rem;
+  display: block;
+  font-size: 1.3rem;
   font-weight: bold;
+  text-align: center;
   color: inherit;
   opacity: 0;
   transition: opacity .25s;
-}
-
-.movements__type {
-  font-size: 1.1rem;
-  text-transform: uppercase;
-  font-weight: 500;
-  color: #fff;
-  padding: 0.1rem 1rem;
-  border-radius: 10rem;
-  margin-right: 2rem;
-}
-
-.movements__sender {
-  font-size: 1.2rem;
-  font-weight: 500;
-  color: #7a7a7a;
-  margin-right: auto;
-}
-
-.movements__date {
-  font-size: 1.1rem;
-  text-transform: uppercase;
-  font-weight: 500;
-  color: #666;
 }
 
 .movements__type--deposit {
@@ -450,6 +437,15 @@ h2 {
   transition: all 0.3s;
 }
 
+.form__header {
+  font-size: 1.8rem;
+  font-weight: bold;
+  text-align: center;
+  color: #f3f3f3;
+  text-shadow: 0 1px 5px rgba(0, 0, 0, 0.25);
+  margin: 0 0 2rem 0;
+}
+
 .form__input:focus {
   outline: none;
   background-color: rgba(255, 255, 255, 0.6);
@@ -472,6 +468,39 @@ h2 {
 .form__btn:focus {
   outline: none;
   background-color: rgba(255, 255, 255, 0.8);
+}
+
+.form__btn--alternative {
+  padding: .5rem 2rem;
+  margin-top: 2rem;
+}
+
+.form__message-popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, .6);
+  z-index: 10;
+  transition: all .25s;
+}
+
+.form__message-popup__content {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  transform: translate(-50%, -50%);
+  width: auto;
+  padding: 2rem;
+  background-image: linear-gradient(to right top, #ffb003, #ffcb03);
+  border-radius: 12px;
+  box-shadow: 0 2px 10px 5px rgba(0, 0, 0, .15);
+  transition: all .25s;
 }
 
 .logout-timer {

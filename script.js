@@ -79,12 +79,15 @@ const containerMovements = document.querySelector('.movements');
 
 const btnLogin = document.querySelector('.login__btn');
 const btnTransfer = document.querySelector('.form__btn--transfer');
+const btnTransferMessage = document.querySelector('.form__btn--transfer-message');
 const btnLoan = document.querySelector('.form__btn--loan');
 const btnClose = document.querySelector('.form__btn--close');
 const btnSort = document.querySelector('.btn--sort');
 
 const inputLoginUsername = document.querySelector('.login__input--user');
 const inputLoginPin = document.querySelector('.login__input--pin');
+const inputTransferMessageContainer = document.querySelector('.form__message-popup');
+const inputTransferMessage = document.querySelector('.form__input--message');
 const inputTransferTo = document.querySelector('.form__input--to');
 const inputTransferAmount = document.querySelector('.form__input--amount');
 const inputLoanAmount = document.querySelector('.form__input--loan-amount');
@@ -188,7 +191,6 @@ const displayMovements = function(movements, sort = 0) {
       <div class="movements__row" id=movement${mov[1]}>
         <div class='movements__main'>
           <div class="movements__type movements__type--${type}">${i + 1} ${type}</div>
-          <div class='movements__sender'>${type === 'deposit' ? 'from' : 'to'}: ${description?.source || 'Unknown'}</div>
           <div class="movements__value">${mov[0]}€</div>
         </div>
         <div class='movements__details'></div>
@@ -247,44 +249,25 @@ btnLogin.addEventListener('click', function(e) {
     inputLoginUsername.blur();
     inputLoginPin.blur();
 
-    // document.querySelector('#movement0').addEventListener('click', function() {
-    //   document.querySelector(`#movement0 > .movements__details`).classList.toggle('movements__details--active');
-    // });
-
     displayNotification(`Welcome, ${currentAccount.owner}!`, 'success');
   } else {
     displayNotification('Wrong credentials!');
   }
 });
 
-btnLoan.addEventListener('click', function(e) {
-  e.preventDefault();
-
-  const amount = Number(inputLoanAmount.value);
-
-  if(amount > 0 && currentAccount.movements.some(mov => mov >= amount * 0.1)) {
-    currentAccount.movements.push(amount);
-
-    currentAccount.movsDesc.set(currentAccount.movements.length - 1, {source: 'Bank'});
-
-    updateUI();
-    inputLoanAmount.value = '';
-
-    displayNotification( `Your request for ${amount}€ loan has been approved!`, 'success');
-  } else if(amount <= 0) {
-    displayNotification('Requested amount must be at least 1€!');
-  } else {
-    displayNotification(`The maximum loan you can take is ${currentAccount.movements.reduce((acc, mov) => mov > acc ? acc = mov : acc, 0) * 10}€!`);
-  }
-});
-
 btnTransfer.addEventListener('click', function(e) {
   e.preventDefault();
 
-  const amount = Number(inputTransferAmount.value);
-  const message = prompt('Would you like to add a message?');
-  const receiverAcc = accounts.find(acc => acc.username === inputTransferTo.value);
+  inputTransferMessageContainer.classList.remove('hidden');
+  inputTransferMessage.focus();
+});
 
+btnTransferMessage.addEventListener('click', function(e) {
+  e.preventDefault();
+
+  const message = inputTransferMessage.value;
+  const amount = Number(inputTransferAmount.value);
+  const receiverAcc = accounts.find(acc => acc.username === inputTransferTo.value);
   if (amount > 0 && currentAccount.balance >= amount && receiverAcc?.username && receiverAcc.username !== currentAccount.username) {
 
     currentAccount.movements.push(-amount);
@@ -307,7 +290,29 @@ btnTransfer.addEventListener('click', function(e) {
     displayNotification('You cannot transfer money to yourself!');
   }
 
-  inputTransferTo.value = inputTransferAmount.value = '';
+  inputTransferTo.value = inputTransferMessage.value = inputTransferAmount.value = '';
+  inputTransferMessageContainer.classList.add('hidden');
+});
+
+btnLoan.addEventListener('click', function(e) {
+  e.preventDefault();
+
+  const amount = Number(inputLoanAmount.value);
+
+  if(amount > 0 && currentAccount.movements.some(mov => mov >= amount * 0.1)) {
+    currentAccount.movements.push(amount);
+
+    currentAccount.movsDesc.set(currentAccount.movements.length - 1, {source: 'Bank'});
+
+    updateUI();
+    inputLoanAmount.value = '';
+
+    displayNotification( `Your request for ${amount}€ loan has been approved!`, 'success');
+  } else if(amount <= 0) {
+    displayNotification('Requested amount must be at least 1€!');
+  } else {
+    displayNotification(`The maximum loan you can take is ${currentAccount.movements.reduce((acc, mov) => mov > acc ? acc = mov : acc, 0) * 10}€!`);
+  }
 });
 
 btnClose.addEventListener('click', function(e){
