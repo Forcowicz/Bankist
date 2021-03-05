@@ -106,6 +106,11 @@ notificationsSwitch.addEventListener('click', function() {
   notifications = !notifications;
 });
 
+const stripTags = function (html){
+  let doc = new DOMParser().parseFromString(html, 'text/html');
+  return doc.body.textContent || "";
+}
+
 const displayNotification = function(info, type = 'error') {
   if(notifications) {
     clearTimeout(hideNotification);
@@ -255,21 +260,44 @@ btnLogin.addEventListener('click', function(e) {
   }
 });
 
+const getFormInputTransfer = function() {
+  const message = stripTags(inputTransferMessage.value);
+  const amount = Number(inputTransferAmount.value);
+  const receiverAcc = accounts.find(acc => acc.username === inputTransferTo.value);
+  return [message, amount, receiverAcc];
+}
+
 btnTransfer.addEventListener('click', function(e) {
   e.preventDefault();
 
-  inputTransferMessageContainer.classList.remove('hidden');
-  inputTransferMessage.focus();
+  const clearTransferFields = () => inputTransferTo.value = inputTransferAmount.value = '';
+
+  const [, amount, receiverAcc] = getFormInputTransfer();
+  if(amount > 0 && currentAccount.balance >= amount && receiverAcc?.username && receiverAcc.username !== currentAccount.username) {
+    inputTransferMessageContainer.classList.remove('hidden');
+    inputTransferMessage.focus();
+  } else if (!receiverAcc?.username) {
+    displayNotification('Receiver does not exist!');
+    clearTransferFields();
+  } else if (amount <= 0) {
+    displayNotification('You have to transer at least 1€!');
+    clearTransferFields();
+  } else if (currentAccount.balance < amount) {
+    displayNotification(`You don't have enough money! Need ${amount - currentAccount.balance}€ more.`);
+    clearTransferFields();
+  } else if (receiverAcc.username === currentAccount.username) {
+    displayNotification('You cannot transfer money to yourself!');
+    clearTransferFields();
+  }
 });
 
 btnTransferMessage.addEventListener('click', function(e) {
   e.preventDefault();
 
-  const message = inputTransferMessage.value;
-  const amount = Number(inputTransferAmount.value);
-  const receiverAcc = accounts.find(acc => acc.username === inputTransferTo.value);
-  if (amount > 0 && currentAccount.balance >= amount && receiverAcc?.username && receiverAcc.username !== currentAccount.username) {
-
+  const [message, amount, receiverAcc] = getFormInputTransfer();
+  if (message.length > 25) {
+    displayNotification('Your message is too long!');
+  } else {
     currentAccount.movements.push(-amount);
     receiverAcc.movements.push(amount);
 
@@ -280,14 +308,6 @@ btnTransferMessage.addEventListener('click', function(e) {
 
     // Display success notification
     displayNotification(`You successfuly transfered ${amount}€ to ${receiverAcc.owner}!`, 'success');
-  } else if (!receiverAcc?.username) {
-    displayNotification('Receiver does not exist!');
-  } else if (amount <= 0) {
-    displayNotification('You have to transer at least 1€!');
-  } else if (currentAccount.balance < amount) {
-    displayNotification(`You don't have enough money! Need ${amount - currentAccount.balance}€ more.`);
-  } else if (receiverAcc.username === currentAccount.username) {
-    displayNotification('You cannot transfer money to yourself!');
   }
 
   inputTransferTo.value = inputTransferMessage.value = inputTransferAmount.value = '';
@@ -363,12 +383,44 @@ notificationBtnClose.addEventListener('click', function() {
 
 const movements = [200, 450, -400, 3000, -650, -130, 70, 1300];
 
-// const numDeposits1000 = accounts.flatMap(acc => acc.movements).filter(mov => mov > 1000).length;
-const convertTitleCase = function(title) {
-  const capitalizeString = str => `${str[0].toUpperCase()}${str.slice(1)}`;
-  const exceptions = ['a', 'an', 'the', 'but', 'or', 'on', 'in', 'with'];
+const dogs = [
+  { weight: 22, curFood: 250, owners: ['Alice', 'Bob'] },
+  { weight: 8, curFood: 200, owners: ['Matilda'] },
+  { weight: 13, curFood: 275, owners: ['Sarah', 'John'] },
+  { weight: 32, curFood: 340, owners: ['Michael'] },
+];
 
-  const titleCase = title.toLowerCase().split(' ').map(word => exceptions.includes(word) ? word : capitalizeString(word));
-  return capitalizeString(titleCase.join(' '));
-}
-console.log(convertTitleCase('Hello my name is Mark and I live an the england hehe thanks'));
+dogs.forEach(dog => {
+  dog.recommendedFood = Math.trunc(dog.weight ** 0.75 * 28);
+})
+
+const sarahDog = dogs.find(dog => dog.owners.includes('Sarah'));
+console.log(sarahDog.recommendedFood > sarahDog.curFood ? "Sarah's dog is eating too little!" : "Sarah's dog is eating too much!");
+
+// const [ownersEatTooMuch, ownersEatTooLittle] = [
+//   dogs.reduce((obj, dog) => {
+//     dog.curFood > dog.recommendedFood ? obj.ownersEatTooMuch.push(dog.owners) : obj.ownersEatTooLittle.push(dog.owners);
+//     return obj;
+//   }, {ownersEatTooMuch: [], ownersEatTooLittle: []})
+// ];
+
+const ownersEatTooMuch = dogs.flatMap(dog => dog.curFood > dog.recommendedFood ? dog.owners : []);
+const ownersEatTooLittle = dogs.flatMap(dog => dog.curFood < dog.recommendedFood ? dog.owners : []);
+
+// 4
+console.log(ownersEatTooMuch.join(' and ') + '\'s dogs eat too much!');
+console.log(ownersEatTooLittle.join(' and ') + '\'s dogs eat too little!');
+
+// 5
+console.log(dogs.some(dog => dog.curFood === dogs.recommendedFood));
+
+// 6, 7
+const isEatingOkay = dog => dog.curFood > dog.recommendedFood * 0.9 && dog.curFood < dog.recommendedFood * 1.10;
+console.log(dogs.some(dog => isEatingOkay(dog)));
+console.log(dogs.filter(dog => isEatingOkay(dog)));
+
+// 8
+const dogsSorted = dogs.slice().sort((a, b) => a.recommendedFood - b.recommendedFood);
+
+console.log(dogsSorted);
+// console.log(ownersEatTooMuch, ownersEatTooLittle);
