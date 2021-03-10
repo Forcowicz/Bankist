@@ -52,7 +52,14 @@
 
       <!-- MOVEMENTS -->
       <div class="movements">
-        
+        <button class='movements__switch movements__switch--requests' id='btn-switch'>
+          <span class='movements__switch-text'>
+            Requests
+          </span>
+        </button>
+        <div class='movements__movs'>
+
+        </div>
       </div>
 
       <!-- SUMMARY -->
@@ -75,6 +82,11 @@
           <button class="form__btn form__btn--transfer">&rarr;</button>
           <label class="form__label">Transfer to</label>
           <label class="form__label">Amount</label>
+          <button class='form__btn-switch' id='switchOperations'>
+            <svg>
+              <use xlink:href='sprite.svg#swap'></use>
+            </svg>
+          </button>
         </form>
       </div>
 
@@ -138,3 +150,4 @@
     <script src="script.js"></script>
   </body>
 </html>
+<!--<div>Icons made by <a href="https://www.flaticon.com/authors/bqlqn" title="bqlqn">bqlqn</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></div>-->

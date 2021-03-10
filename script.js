@@ -14,13 +14,18 @@ let currentAccount;
 // Error timeout
 let hideNotification;
 
+// Is currently transfer or request operation visible
+let operationTransferState = false;
+
 // Data
+const transferRequests = [];
+
 const account1 = {
   owner: 'Jonas Schmedtmann',
   movements: [200, 450, -400, 3000, -650, -130, 70, 1300],
   interestRate: 1.2, // %
   pin: 1111,
-  movsDesc: new Map([[0, {}], [1, {}], [2, {}], [3, {}], [4, {}], [5, {}], [6, {}], [7, {}]])
+  movsDesc: new Map([[0, {}], [1, {}], [2, {}], [3, {}], [4, {}], [5, {}], [6, {}], [7, {}]]),
 };
 
 const account2 = {
@@ -28,7 +33,7 @@ const account2 = {
   movements: [5000, 3400, -150, -790, -3210, -1000, 8500, -30],
   interestRate: 1.5,
   pin: 2222,
-  movsDesc: new Map([[0, {}], [1, {}], [2, {}], [3, {}], [4, {}], [5, {}], [6, {}], [7, {}], [8, {}]])
+  movsDesc: new Map([[0, {}], [1, {}], [2, {}], [3, {}], [4, {}], [5, {}], [6, {}], [7, {}], [8, {}]]),
 };
 
 const account3 = {
@@ -36,7 +41,7 @@ const account3 = {
   movements: [200, -200, 340, -300, -20, 50, 400, -460],
   interestRate: 0.7,
   pin: 3333,
-  movsDesc: new Map([[0, {}], [1, {}], [2, {}], [3, {}], [4, {}], [5, {}], [6, {}], [7, {}]])
+  movsDesc: new Map([[0, {}], [1, {}], [2, {}], [3, {}], [4, {}], [5, {}], [6, {}], [7, {}]]),
 };
 
 const account4 = {
@@ -44,7 +49,7 @@ const account4 = {
   movements: [430, 1000, 700, 50, 90],
   interestRate: 1,
   pin: 4444,
-  movsDesc: new Map([[0, {}], [1, {}], [2, {}], [3, {}], [4, {}]])
+  movsDesc: new Map([[0, {}], [1, {}], [2, {}], [3, {}], [4, {}]]),
 };
 
 const account5 = {
@@ -52,7 +57,7 @@ const account5 = {
   movements: [1300, -2000, 3900, 15020, 2],
   interestRate: 1,
   pin: 5555,
-  movsDesc: new Map([[0, {}], [1, {}], [2, {}], [3, {}], [4, {}]])
+  movsDesc: new Map([[0, {}], [1, {}], [2, {}], [3, {}], [4, {}]]),
 };
 
 const account6 = {
@@ -60,7 +65,7 @@ const account6 = {
   movements: [300, -500, 100, 1, 20, -15, -300, 1337],
   interestRate: 1,
   pin: 5555,
-  movsDesc: new Map([[0, {}], [1, {}], [2, {}], [3, {}], [4, {}], [5, {}], [6, {}], [7, {}]])
+  movsDesc: new Map([[0, {}], [1, {}], [2, {}], [3, {}], [4, {}], [5, {}], [6, {}], [7, {}]]),
 };
 
 const accounts = [account1, account2, account3, account4, account5, account6];
@@ -73,9 +78,12 @@ const labelSumIn = document.querySelector('.summary__value--in');
 const labelSumOut = document.querySelector('.summary__value--out');
 const labelSumInterest = document.querySelector('.summary__value--interest');
 const labelTimer = document.querySelector('.timer');
+const btnSwitchLabel = document.querySelector('.movements__switch-text');
+const operationTransferHeading = document.querySelector('.operation--transfer > h2');
+const operationTransferFromLabel = document.querySelector('.operation--transfer .form__label');
 
 const containerApp = document.querySelector('.app');
-const containerMovements = document.querySelector('.movements');
+const containerMovements = document.querySelector('.movements__movs');
 
 const btnLogin = document.querySelector('.login__btn');
 const btnTransfer = document.querySelector('.form__btn--transfer');
@@ -83,6 +91,10 @@ const btnTransferMessage = document.querySelector('.form__btn--transfer-message'
 const btnLoan = document.querySelector('.form__btn--loan');
 const btnClose = document.querySelector('.form__btn--close');
 const btnSort = document.querySelector('.btn--sort');
+const btnSwitch = document.getElementById('btn-switch');
+const btnFormSwitch = document.getElementById('switchOperations');
+
+const transferOperation = document.querySelector('.operation--transfer');
 
 const inputLoginUsername = document.querySelector('.login__input--user');
 const inputLoginPin = document.querySelector('.login__input--pin');
@@ -106,7 +118,7 @@ notificationsSwitch.addEventListener('click', function() {
   notifications = !notifications;
 });
 
-const stripTags = function (html){
+const stripTags = function (html) {
   let doc = new DOMParser().parseFromString(html, 'text/html');
   return doc.body.textContent || "";
 }
@@ -149,6 +161,24 @@ const createUsernames = function (accs) {
 
 createUsernames(accounts);
 
+const modifySwitchBtn = function(changeTo, runFunction = false) {
+  // 0: Change to movements, 1: Change to requests, Other: Don't change
+  if(changeTo === 0) {
+    btnSwitch.classList.add('movements__switch--movements');
+    btnSwitch.classList.remove('movements__switch--requests');
+    btnSwitchLabel.textContent = 'Movements';
+  } else if(changeTo === 1) {
+    btnSwitch.classList.remove('movements__switch--movements');
+    btnSwitch.classList.add('movements__switch--requests');
+    btnSwitchLabel.textContent = 'Requests';
+  }
+
+  if(runFunction) {
+    changeTo === 0 ? displayMovements(currentAccount.movements) : displayTransferRequests(transferRequests);
+  }
+};
+
+// This function displays description for every movement
 const displayMovementsDetails = function(movements) {
   movements.forEach(function(mov) {
     const [value, currentIndex] = mov;
@@ -173,8 +203,10 @@ const displayMovementsDetails = function(movements) {
   });
 }
 
+// This function creates DOM elements, displays movements
 const displayMovements = function(movements, sort = 0) {
-  containerMovements.innerHTML = '';
+ containerMovements.innerHTML = '';
+ modifySwitchBtn(0);
 
  let movs;
   switch(sort) {
@@ -189,7 +221,7 @@ const displayMovements = function(movements, sort = 0) {
   }
 
   movs.forEach(function(mov, i) {
-    const type = mov[0] > 0 ? 'deposit' : 'withdrawal';
+    const type = mov[0] > 0 ? 'positive' : 'negative';
     let description = currentAccount.movsDesc.get(mov[1]);
     description.currentIndex = i;
     const html = `
@@ -204,7 +236,30 @@ const displayMovements = function(movements, sort = 0) {
 
     containerMovements.insertAdjacentHTML('afterbegin', html);
   });
+
   displayMovementsDetails(movs);
+}
+
+// This function displays transfer requests in form of movements
+const displayTransferRequests = function(req) {
+  containerMovements.innerHTML = '';
+  modifySwitchBtn(1);
+
+  const requests = req.filter(request => request.to === currentAccount.owner || request.from === currentAccount.owner);
+  requests.forEach((request, i) => {
+    const type = currentAccount.owner === request.from ? 'positive' : 'negative';
+    const html = `
+      <div class="movements__row" id="request${i}">
+        <div class='movements__main'>
+          <div class='movements__type movements__type--${type}'>${i + 1} request</div>
+          <span class='movements__from'>${type === 'positive' ? 'To: ' : 'From: '}${type === 'positive' ? request.to : request.from}</span>
+          <div class='movements__value'>${request.amount}€</div>
+        </div>
+        <div class='movements__details'></div>
+      </div>
+    `;
+    containerMovements.insertAdjacentHTML('afterbegin', html);
+  });
 }
 
 const calcPrintBalance = function (acc) {
@@ -241,7 +296,7 @@ btnLogin.addEventListener('click', function(e) {
   
   currentAccount = accounts.find(acc => acc.username === inputLoginUsername.value);
   
-  if(currentAccount?.pin === Number(inputLoginPin.value)) {
+  if(currentAccount?.pin === +inputLoginPin.value) {
     // Display the UI and welcome message
     labelWelcome.textContent = `Welcome back, ${currentAccount.owner.split(' ')[0]}!`;
     containerApp.style.opacity = '1';
@@ -262,7 +317,7 @@ btnLogin.addEventListener('click', function(e) {
 
 const getFormInputTransfer = function() {
   const message = stripTags(inputTransferMessage.value);
-  const amount = Number(inputTransferAmount.value);
+  const amount = +inputTransferAmount.value;
   const receiverAcc = accounts.find(acc => acc.username === inputTransferTo.value);
   return [message, amount, receiverAcc];
 }
@@ -298,16 +353,26 @@ btnTransferMessage.addEventListener('click', function(e) {
   if (message.length > 25) {
     displayNotification('Your message is too long!');
   } else {
-    currentAccount.movements.push(-amount);
-    receiverAcc.movements.push(amount);
+    if(operationTransferState) {
+      transferRequests.push({
+        to: receiverAcc.owner,
+        from: currentAccount.owner,
+        amount,
+        message,
+        sent: '10-03-2021',
+        deadline: '12-03-2021'
+      });
+      displayNotification(`You successfuly requested ${amount}€ from ${receiverAcc.owner}!`, 'success');
+    } else {
+      currentAccount.movements.push(-amount);
+      receiverAcc.movements.push(amount);
 
-    currentAccount.movsDesc.set(currentAccount.movements.length - 1, {source: receiverAcc.owner, message});
-    receiverAcc.movsDesc.set(receiverAcc.movements.length - 1, {source: currentAccount.owner, message});
-
+      currentAccount.movsDesc.set(currentAccount.movements.length - 1, {source: receiverAcc.owner, message});
+      receiverAcc.movsDesc.set(receiverAcc.movements.length - 1, {source: currentAccount.owner, message});
+      displayNotification(`You successfuly transfered ${amount}€ to ${receiverAcc.owner}!`, 'success');
+    }
+    modifySwitchBtn();
     updateUI();
-
-    // Display success notification
-    displayNotification(`You successfuly transfered ${amount}€ to ${receiverAcc.owner}!`, 'success');
   }
 
   inputTransferTo.value = inputTransferMessage.value = inputTransferAmount.value = '';
@@ -317,7 +382,7 @@ btnTransferMessage.addEventListener('click', function(e) {
 btnLoan.addEventListener('click', function(e) {
   e.preventDefault();
 
-  const amount = Number(inputLoanAmount.value);
+  const amount = +(inputLoanAmount.value);
 
   if(amount > 0 && currentAccount.movements.some(mov => mov >= amount * 0.1)) {
     currentAccount.movements.push(amount);
@@ -325,6 +390,7 @@ btnLoan.addEventListener('click', function(e) {
     currentAccount.movsDesc.set(currentAccount.movements.length - 1, {source: 'Bank'});
 
     updateUI();
+    modifySwitchBtn();
     inputLoanAmount.value = '';
 
     displayNotification( `Your request for ${amount}€ loan has been approved!`, 'success');
@@ -338,7 +404,7 @@ btnLoan.addEventListener('click', function(e) {
 btnClose.addEventListener('click', function(e){
   e.preventDefault();
 
-  if(inputCloseUsername.value === currentAccount.username && Number(inputClosePin.value) === currentAccount.pin) {
+  if(inputCloseUsername.value === currentAccount.username && +(inputClosePin.value) === currentAccount.pin) {
     const index = accounts.findIndex(acc => acc.username === currentAccount.username);
 
     accounts.splice(index, 1);
@@ -352,7 +418,7 @@ btnClose.addEventListener('click', function(e){
     displayNotification(`Your account, ${currentAccount.owner} has been successfuly deleted!`, 'success');
   } else if(inputCloseUsername.value !== currentAccount.username) {
     displayNotification('Wrong account username!');
-  } else if(Number(inputClosePin.value) !== currentAccount.pin) {
+  } else if(+inputClosePin.value !== currentAccount.pin) {
     displayNotification( 'Wrong PIN!');
   }
 });
@@ -372,55 +438,28 @@ btnSort.addEventListener('click', () => {
   displayMovements(currentAccount.movements, sorted);
 });
 
+btnSwitch.addEventListener('click', function() {
+  btnSwitch.classList.contains('movements__switch--movements') ? modifySwitchBtn(1, true) : modifySwitchBtn(0, true);
+});
+
+btnFormSwitch.addEventListener('click', function(e) {
+  e.preventDefault();
+
+  if(operationTransferState) {
+    operationTransferHeading.textContent = 'Transfer money';
+    operationTransferFromLabel.textContent = 'Transfer to';
+  } else {
+    operationTransferHeading.textContent = 'Request money';
+    operationTransferFromLabel.textContent = 'Request from';
+  }
+  transferOperation.classList.toggle('operation--request');
+  btnFormSwitch.classList.toggle('form__btn-switch--request');
+  operationTransferState = !operationTransferState;
+});
+
 // Error event listener
 notificationBtnClose.addEventListener('click', function() {
   notificationContainer.classList.add('hidden');
   notificationContainer.classList.remove('pop');
   clearTimeout(hideNotification);
-})
-
-////// LECTURES
-
-const movements = [200, 450, -400, 3000, -650, -130, 70, 1300];
-
-const dogs = [
-  { weight: 22, curFood: 250, owners: ['Alice', 'Bob'] },
-  { weight: 8, curFood: 200, owners: ['Matilda'] },
-  { weight: 13, curFood: 275, owners: ['Sarah', 'John'] },
-  { weight: 32, curFood: 340, owners: ['Michael'] },
-];
-
-dogs.forEach(dog => {
-  dog.recommendedFood = Math.trunc(dog.weight ** 0.75 * 28);
-})
-
-const sarahDog = dogs.find(dog => dog.owners.includes('Sarah'));
-console.log(sarahDog.recommendedFood > sarahDog.curFood ? "Sarah's dog is eating too little!" : "Sarah's dog is eating too much!");
-
-// const [ownersEatTooMuch, ownersEatTooLittle] = [
-//   dogs.reduce((obj, dog) => {
-//     dog.curFood > dog.recommendedFood ? obj.ownersEatTooMuch.push(dog.owners) : obj.ownersEatTooLittle.push(dog.owners);
-//     return obj;
-//   }, {ownersEatTooMuch: [], ownersEatTooLittle: []})
-// ];
-
-const ownersEatTooMuch = dogs.flatMap(dog => dog.curFood > dog.recommendedFood ? dog.owners : []);
-const ownersEatTooLittle = dogs.flatMap(dog => dog.curFood < dog.recommendedFood ? dog.owners : []);
-
-// 4
-console.log(ownersEatTooMuch.join(' and ') + '\'s dogs eat too much!');
-console.log(ownersEatTooLittle.join(' and ') + '\'s dogs eat too little!');
-
-// 5
-console.log(dogs.some(dog => dog.curFood === dogs.recommendedFood));
-
-// 6, 7
-const isEatingOkay = dog => dog.curFood > dog.recommendedFood * 0.9 && dog.curFood < dog.recommendedFood * 1.10;
-console.log(dogs.some(dog => isEatingOkay(dog)));
-console.log(dogs.filter(dog => isEatingOkay(dog)));
-
-// 8
-const dogsSorted = dogs.slice().sort((a, b) => a.recommendedFood - b.recommendedFood);
-
-console.log(dogsSorted);
-// console.log(ownersEatTooMuch, ownersEatTooLittle);
+});

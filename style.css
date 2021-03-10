@@ -254,10 +254,17 @@ button:focus {
 
 /* MOVEMENTS */
 .movements {
+  position: relative;
   grid-row: 2 / span 3;
   background-color: #fff;
   border-radius: 1rem;
   overflow: scroll;
+}
+
+.movements__movs {
+  display: block;
+  width: 100%;
+  height: auto;
 }
 
 .movements__row {
@@ -282,6 +289,12 @@ button:focus {
   padding: 0.1rem 1rem;
   border-radius: 10rem;
   margin-right: 2rem;
+}
+
+.movements__from {
+  font-size: 1.2rem;
+  color: #7a7a7a;
+  margin-right: auto;
 }
 
 .movements__date {
@@ -330,17 +343,55 @@ button:focus {
   transition: opacity .25s;
 }
 
-.movements__type--deposit {
+.movements__type--positive {
   background-image: linear-gradient(to top left, #39b385, #9be15d);
 }
 
-.movements__type--withdrawal {
+.movements__type--negative {
   background-image: linear-gradient(to top left, #e52a5a, #ff585f);
 }
 
 .movements__value {
   font-size: 1.7rem;
   margin-left: auto;
+}
+
+/*.movements__switch-modal {*/
+/*  position: absolute;*/
+/*  top: 0;*/
+/*  left: 0;*/
+/*  width: 100%;*/
+/*  height: 100%;*/
+/*  pointer-events: none;*/
+/*}*/
+
+.movements__switch {
+  width: 100%;
+  height: 6rem;
+  cursor: pointer;
+  transition: all .15s;
+}
+
+.movements__switch--requests {
+  background-color: #e52a5a;
+}
+
+.movements__switch--requests:hover {
+  background-color: #db224a;
+}
+
+.movements__switch--movements {
+  background-color: #66c873;
+}
+
+.movements__switch--movements:hover {
+  background-color: #39b385;
+}
+
+.movements__switch-text {
+  font-size: 1.8rem;
+  color: #f3f3f3;
+  text-transform: uppercase;
 }
 
 /* SUMMARY */
@@ -384,6 +435,7 @@ button:focus {
 
 /* OPERATIONS */
 .operation {
+  position: relative;
   border-radius: 1rem;
   padding: 3rem 4rem;
   color: #333;
@@ -391,6 +443,10 @@ button:focus {
 
 .operation--transfer {
   background-image: linear-gradient(to top left, #ffb003, #ffcb03);
+}
+
+.operation--request {
+  background-image: linear-gradient(to top left, #e52a5a, #ff585f);
 }
 
 .operation--loan {
@@ -468,6 +524,36 @@ h2 {
 .form__btn:focus {
   outline: none;
   background-color: rgba(255, 255, 255, 0.8);
+}
+
+.form__btn-switch {
+  box-sizing: content-box;
+  position: absolute;
+  bottom: 1rem;
+  right: 1rem;
+  border-radius: 50%;
+  padding: .5rem;
+  width: 1.5rem;
+  height: 1.5rem;
+  background-image: radial-gradient(circle, #ffb003, #ffcb03);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, .25);
+  transition: all .15s ease-out;
+  cursor: pointer;
+}
+
+.form__btn-switch > svg {
+  display: inline-block;
+  fill: #fff;
+  width: 1.4rem;
+  height: 1.4rem;
+}
+
+.form__btn-switch:hover {
+  transform: scale(1.15);
+}
+
+.form__btn-switch--request {
+  background-image: linear-gradient(to top left, #e52a5a, #ff585f);
 }
 
 .form__btn--alternative {
