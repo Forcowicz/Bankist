@@ -178,30 +178,16 @@ const modifySwitchBtn = function(changeTo, runFunction = false) {
   }
 };
 
-// This function displays description for every movement
-const displayMovementsDetails = function(movements) {
-  movements.forEach(function(mov) {
-    const [value, currentIndex] = mov;
-    const movementDescriptionObject = currentAccount.movsDesc.get(currentIndex);
-    const movementDetailsDOM = document.querySelector(`#movement${currentIndex} > .movements__details`);
-
-    const html = `
-      <span class='movements__column-element'>${value > 0 ? 'Received from' : 'Sent to'}: ${movementDescriptionObject.source || 'Initial'}</span>
-      ${movementDescriptionObject.message ? `<span class='movements__column-element'>Message: ${movementDescriptionObject.message}</span>` : ''}
-      <span class='movements__column-element'>Date: Today</span>
-    `;
-
-    document.getElementById(`movement${currentIndex}`).addEventListener('click', function() {
-      if (movementDetailsDOM.classList.contains('movements__details--active')) {
-        movementDetailsDOM.innerHTML = '';
-      } else {
-        movementDetailsDOM.insertAdjacentHTML('afterbegin', html);
-        document.querySelectorAll(`.${movementDetailsDOM.className} > .movements__column-element`).forEach(el => setTimeout(() => el.style.opacity = '1', 150));
-      }
-      movementDetailsDOM.classList.toggle('movements__details--active');
-    });
+const toggleDescriptions = (type, i) => {
+  const details = document.querySelector(`#${type}${i} > .movements__details`);
+  document.querySelector(`#${type}${i}`).addEventListener('click', function() {
+    if(Number.parseInt(details.style.maxHeight) > 0) {
+      details.style.maxHeight = 0;
+    } else {
+      details.style.maxHeight = `${details.scrollHeight}px`;
+    }
   });
-}
+};
 
 // This function creates DOM elements, displays movements
 const displayMovements = function(movements, sort = 0) {
@@ -221,26 +207,42 @@ const displayMovements = function(movements, sort = 0) {
   }
 
   movs.forEach(function(mov, i) {
+    const [value, currentIndex] = mov;
+    const movementDescriptionObject = currentAccount.movsDesc.get(currentIndex);
     const type = mov[0] > 0 ? 'positive' : 'negative';
     let description = currentAccount.movsDesc.get(mov[1]);
     description.currentIndex = i;
     const html = `
       <div class="movements__row" id=movement${mov[1]}>
         <div class='movements__main'>
-          <div class="movements__type movements__type--${type}">${i + 1} ${type}</div>
+          <div class="movements__type movements__type--${type}">${i + 1} ${type === 'positive' ? 'deposit' : 'withdrawal'}</div>
           <div class="movements__value">${mov[0]}€</div>
         </div>
-        <div class='movements__details'></div>
+        <div class='movements__details'>
+          <div class='movements__details-row'>
+            <span class='movements__details-column'>${value > 0 ? 'From:' : 'To'}</span>
+            <span class='movements__details-column'>${movementDescriptionObject.source || 'N/A'}</span>
+          </div>
+          <div class='movements__details-row'>
+            <span class='movements__details-column'>Message:</span>
+            <span class='movements__details-column'>${movementDescriptionObject.message || 'N/A'}</span>
+          </div>
+          <div class='movements__details-row'>
+            <span class='movements__details-column'>Sent:</span>
+            <span class='movements__details-column'>${movementDescriptionObject.date}</span>
+          </div>
+        </div>
       </div>
     `;
 
     containerMovements.insertAdjacentHTML('afterbegin', html);
-  });
 
-  displayMovementsDetails(movs);
+    // Display descriptions
+    toggleDescriptions('movement', i);
+  });
 }
 
-// This function displays transfer requests in form of movements
+// This function displays transfer requests with their descriptions in form of movements
 const displayTransferRequests = function(req) {
   containerMovements.innerHTML = '';
   modifySwitchBtn(1);
@@ -248,6 +250,7 @@ const displayTransferRequests = function(req) {
   const requests = req.filter(request => request.to === currentAccount.owner || request.from === currentAccount.owner);
   requests.forEach((request, i) => {
     const type = currentAccount.owner === request.from ? 'positive' : 'negative';
+    const source = request.from === currentAccount.owner ? 'to' : 'from';
     const html = `
       <div class="movements__row" id="request${i}">
         <div class='movements__main'>
@@ -255,13 +258,33 @@ const displayTransferRequests = function(req) {
           <span class='movements__from'>${type === 'positive' ? 'To: ' : 'From: '}${type === 'positive' ? request.to : request.from}</span>
           <div class='movements__value'>${request.amount}€</div>
         </div>
-        <div class='movements__details'></div>
+        <div class='movements__details'>
+          <div class='movements__details-row'>
+          <span class='movements__details-column'>${source}:</span>
+          <span class='movements__details-column'>${request[source] || 'N/A'}</span>
+          </div>
+          <div class='movements__details-row'>
+            <span class='movements__details-column'>Message:</span>
+            <span class='movements__details-column'>${request.message || 'N/A'}</span>
+          </div>
+          <div class='movements__details-row'>
+            <span class='movements__details-column'>Sent:</span>
+            <span class='movements__details-column'>${request.sent}</span>
+          </div>
+          <div class='movements__details-row'>
+            <span class='movements__details-column'>Valid until:</span>
+            <span class='movements__details-column'>${request.deadline}</span>
+          </div>
       </div>
+     </div>
     `;
+
     containerMovements.insertAdjacentHTML('afterbegin', html);
+
+    // Display descriptions
+    toggleDescriptions('request', i);
   });
 }
-
 const calcPrintBalance = function (acc) {
   acc.balance = acc.movements.reduce((acc, cur) => acc + cur, 0);
 
@@ -327,21 +350,25 @@ btnTransfer.addEventListener('click', function(e) {
 
   const clearTransferFields = () => inputTransferTo.value = inputTransferAmount.value = '';
 
+  const type = operationTransferState ? 'request' : 'transfer';
   const [, amount, receiverAcc] = getFormInputTransfer();
   if(amount > 0 && currentAccount.balance >= amount && receiverAcc?.username && receiverAcc.username !== currentAccount.username) {
     inputTransferMessageContainer.classList.remove('hidden');
-    inputTransferMessage.focus();
   } else if (!receiverAcc?.username) {
     displayNotification('Receiver does not exist!');
     clearTransferFields();
   } else if (amount <= 0) {
-    displayNotification('You have to transer at least 1€!');
+    displayNotification(`You have to ${type} at least 1€!`);
     clearTransferFields();
   } else if (currentAccount.balance < amount) {
-    displayNotification(`You don't have enough money! Need ${amount - currentAccount.balance}€ more.`);
-    clearTransferFields();
+    if(operationTransferState) {
+      inputTransferMessageContainer.classList.remove('hidden');
+    } else {
+      displayNotification(`You don't have enough money! Need ${amount - currentAccount.balance}€ more.`);
+      clearTransferFields();
+    }
   } else if (receiverAcc.username === currentAccount.username) {
-    displayNotification('You cannot transfer money to yourself!');
+    displayNotification(`You cannot ${type} money ${type === 'transfer' ? 'to' : 'from'} yourself!`);
     clearTransferFields();
   }
 });
@@ -367,8 +394,8 @@ btnTransferMessage.addEventListener('click', function(e) {
       currentAccount.movements.push(-amount);
       receiverAcc.movements.push(amount);
 
-      currentAccount.movsDesc.set(currentAccount.movements.length - 1, {source: receiverAcc.owner, message});
-      receiverAcc.movsDesc.set(receiverAcc.movements.length - 1, {source: currentAccount.owner, message});
+      currentAccount.movsDesc.set(currentAccount.movements.length - 1, {source: receiverAcc.owner, message, date: '12-02-2021'});
+      receiverAcc.movsDesc.set(receiverAcc.movements.length - 1, {source: currentAccount.owner, message, date: '12-02-2021'});
       displayNotification(`You successfuly transfered ${amount}€ to ${receiverAcc.owner}!`, 'success');
     }
     modifySwitchBtn();
