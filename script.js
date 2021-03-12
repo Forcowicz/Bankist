@@ -215,7 +215,7 @@ const displayMovements = function(movements, sort = 0) {
       <div class="movements__row" id=movement${i}>
         <div class='movements__main'>
           <div class="movements__type movements__type--${type}">${i + 1} ${type === 'positive' ? 'deposit' : 'withdrawal'}</div>
-          <div class="movements__value">${value.toFixed(2)}€</div>
+          <div class="movements__value movements__value--margin">${value.toFixed(2)}€</div>
         </div>
         <div class='movements__details'>
           <div class='movements__details-row'>
@@ -241,6 +241,61 @@ const displayMovements = function(movements, sort = 0) {
   });
 }
 
+const setReactButtons = (request, i) => {
+
+  document.querySelector(`#request${i} .movements__react-button--decline`).addEventListener('click', function() {
+    removeRequest(request.id);
+    updateUI();
+  });
+
+  if(document.querySelector(`#request${i} .movements__react-button--accept`)) {
+    document.querySelector(`#request${i} .movements__react-button--accept`).addEventListener('click', function() {
+      const receiverAcc = accounts.find(acc => acc.owner === request.from);
+
+      currentAccount.movements.push(-request.amount);
+      receiverAcc.movements.push(request.amount);
+
+      currentAccount.movsDesc.set(currentAccount.movements.length - 1, {source: receiverAcc.owner, message: `Request #${request.id} from ${request.sent}`, date: '12-02-2021'});
+      receiverAcc.movsDesc.set(receiverAcc.movements.length - 1, {source: currentAccount.owner, message: `Request #${request.id} from ${request.sent}`, date: '12-02-2021'});
+
+      removeRequest(request.id);
+      displayNotification(`Request accepted. You transfered ${request.amount.toFixed(2)}€ to ${request.from}.`, 'success')
+      updateUI();
+    });
+  }
+}
+
+const displayReactButtons = type => {
+  if(type === 'positive') {
+    return `
+      <div class='movements-react-button-container'>
+         <button type='button' class='movements__react-button movements__react-button--decline'>
+          <svg>
+            <use xlink:href='sprite.svg#close-cross'></use>
+          </svg>
+        </button>
+      </div>
+    `
+  } else {
+    return `
+      <div class='movements-react-button-container'>
+         <button type='button' class='movements__react-button movements__react-button--accept'>
+          <svg>
+            <use xlink:href='sprite.svg#check-mark'></use>
+          </svg>
+         </button>
+         <button type='button' class='movements__react-button movements__react-button--decline'>
+          <svg>
+            <use xlink:href='sprite.svg#close-cross'></use>
+          </svg>
+        </button>
+      </div>
+    `
+  }
+}
+
+const removeRequest = id => transferRequests.splice(id, 1);
+
 // This function displays transfer requests with their descriptions in form of movements
 const displayTransferRequests = function(req, sort = 0) {
   containerMovements.innerHTML = '';
@@ -264,6 +319,7 @@ const displayTransferRequests = function(req, sort = 0) {
         <div class='movements__main'>
           <div class='movements__type movements__type--${type}'>${i + 1} request</div>
           <span class='movements__from'>${type === 'positive' ? 'To: ' : 'From: '}${type === 'positive' ? request.to : request.from}</span>
+          ${displayReactButtons(type)}
           <div class='movements__value'>${(request.amount).toFixed(2)}€</div>
         </div>
         <div class='movements__details'>
@@ -291,6 +347,8 @@ const displayTransferRequests = function(req, sort = 0) {
 
     // Display descriptions
     toggleDescriptions('request', i);
+
+    setReactButtons(request, i);
   });
 }
 const calcDisplayBalance = function (acc) {
@@ -395,7 +453,8 @@ btnTransferMessage.addEventListener('click', function(e) {
         amount,
         message,
         sent: '10-03-2021',
-        deadline: '12-03-2021'
+        deadline: '12-03-2021',
+        id: transferRequests.length
       });
       displayNotification(`You successfuly requested ${amount}€ from ${receiverAcc.owner}!`, 'success');
     } else {

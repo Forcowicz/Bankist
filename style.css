@@ -350,6 +350,10 @@ button:focus {
 
 .movements__value {
   font-size: 1.7rem;
+  margin-left: 1.25rem;
+}
+
+.movements__value--margin {
   margin-left: auto;
 }
 
@@ -380,6 +384,58 @@ button:focus {
   font-size: 1.8rem;
   color: #f3f3f3;
   text-transform: uppercase;
+}
+
+.movements__react-button-container {
+  margin-left: auto;
+}
+
+.movements__react-button {
+  box-sizing: content-box;
+  width: 1.25rem;
+  height: 1.25rem;
+  padding: .5rem;
+  border-radius: 50%;
+  transition: background-color .15s;
+  cursor: pointer;
+  border: none;
+  background-color: #fff;
+}
+
+.movements__react-button:hover {
+  outline: none;
+}
+
+.movements__react-button:first-of-type {
+  margin-left: auto;
+  margin-right: 1rem;
+}
+
+.movements__react-button--accept {
+  border: 2px solid #39b385;
+}
+
+.movements__react-button--accept:hover {
+  background-color: #39b385;
+}
+
+.movements__react-button--decline {
+  border: 2px solid #db224a;
+}
+
+.movements__react-button--decline:hover {
+  background-color: #db224a;
+}
+
+.movements__react-button > svg {
+  width: 100%;
+  height: 100%;
+  fill: #222;
+  transition: fill .15s;
+}
+
+.movements__react-button:hover > svg {
+  fill: #fff;
 }
 
 /* SUMMARY */
