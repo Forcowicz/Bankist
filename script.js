@@ -18,7 +18,7 @@ let hideNotification;
 let operationTransferState = false;
 
 // Requests counts for IDs
-let requestCount = 0;
+let requestCount = -1;
 
 // Data
 const transferRequests = [];
@@ -457,7 +457,7 @@ btnTransferMessage.addEventListener('click', function(e) {
         message,
         sent: '10-03-2021',
         deadline: '12-03-2021',
-        id: requestCount++
+        id: ++requestCount
       });
       displayNotification(`You successfuly requested ${amount}€ from ${receiverAcc.owner}!`, 'success');
     } else {
