@@ -209,14 +209,13 @@ const displayMovements = function(movements, sort = 0) {
   movs.forEach(function(mov, i) {
     const [value, currentIndex] = mov;
     const movementDescriptionObject = currentAccount.movsDesc.get(currentIndex);
-    const type = mov[0] > 0 ? 'positive' : 'negative';
-    let description = currentAccount.movsDesc.get(mov[1]);
-    description.currentIndex = i;
+    movementDescriptionObject.currentIndex = i;
+    const type = value > 0 ? 'positive' : 'negative';
     const html = `
-      <div class="movements__row" id=movement${mov[1]}>
+      <div class="movements__row" id=movement${i}>
         <div class='movements__main'>
           <div class="movements__type movements__type--${type}">${i + 1} ${type === 'positive' ? 'deposit' : 'withdrawal'}</div>
-          <div class="movements__value">${mov[0]}€</div>
+          <div class="movements__value">${value.toFixed(2)}€</div>
         </div>
         <div class='movements__details'>
           <div class='movements__details-row'>
@@ -229,7 +228,7 @@ const displayMovements = function(movements, sort = 0) {
           </div>
           <div class='movements__details-row'>
             <span class='movements__details-column'>Sent:</span>
-            <span class='movements__details-column'>${movementDescriptionObject.date}</span>
+            <span class='movements__details-column'>${movementDescriptionObject.date || 'N/A'}</span>
           </div>
         </div>
       </div>
@@ -243,11 +242,20 @@ const displayMovements = function(movements, sort = 0) {
 }
 
 // This function displays transfer requests with their descriptions in form of movements
-const displayTransferRequests = function(req) {
+const displayTransferRequests = function(req, sort = 0) {
   containerMovements.innerHTML = '';
   modifySwitchBtn(1);
 
-  const requests = req.filter(request => request.to === currentAccount.owner || request.from === currentAccount.owner);
+  let requests = req.filter(request => request.to === currentAccount.owner || request.from === currentAccount.owner);
+  switch(sort) {
+    case 0:
+      requests.sort((a, b) => a.amount - b.amount);
+      break;
+    case 1:
+      requests.sort((a, b) => b.amount - a.amount);
+      break;
+  }
+
   requests.forEach((request, i) => {
     const type = currentAccount.owner === request.from ? 'positive' : 'negative';
     const source = request.from === currentAccount.owner ? 'to' : 'from';
@@ -256,7 +264,7 @@ const displayTransferRequests = function(req) {
         <div class='movements__main'>
           <div class='movements__type movements__type--${type}'>${i + 1} request</div>
           <span class='movements__from'>${type === 'positive' ? 'To: ' : 'From: '}${type === 'positive' ? request.to : request.from}</span>
-          <div class='movements__value'>${request.amount}€</div>
+          <div class='movements__value'>${(request.amount).toFixed(2)}€</div>
         </div>
         <div class='movements__details'>
           <div class='movements__details-row'>
@@ -273,7 +281,7 @@ const displayTransferRequests = function(req) {
           </div>
           <div class='movements__details-row'>
             <span class='movements__details-column'>Valid until:</span>
-            <span class='movements__details-column'>${request.deadline}</span>
+            <span class='movements__details-column'>${request.deadline || 'Forever'}</span>
           </div>
       </div>
      </div>
@@ -285,18 +293,18 @@ const displayTransferRequests = function(req) {
     toggleDescriptions('request', i);
   });
 }
-const calcPrintBalance = function (acc) {
+const calcDisplayBalance = function (acc) {
   acc.balance = acc.movements.reduce((acc, cur) => acc + cur, 0);
 
-  labelBalance.textContent = `${acc.balance}€`
+  labelBalance.textContent = `${(acc.balance).toFixed(2)}€`
 };
 
 const calcDisplaySummary = function (account) {
   const incomes = account.movements.filter(mov => mov > 0).reduce((acc, mov) => acc + mov, 0);
-  labelSumIn.textContent = `${incomes}€`;
+  labelSumIn.textContent = `${incomes.toFixed(2)}€`;
 
   const outcomes = account.movements.filter(mov => mov < 0).reduce((acc, mov) => acc + mov, 0);
-  labelSumOut.textContent = `${Math.abs(outcomes)}€`;
+  labelSumOut.textContent = `${Math.abs(outcomes.toFixed(2))}€`;
 
   const interest = account.movements.filter(mov => mov > 0).map(mov => mov * account.interestRate / 100).reduce((acc, int) => int >= 1 ? acc + int : acc ,0);
   labelSumInterest.textContent = `${interest.toFixed(2)}€`;
@@ -307,7 +315,7 @@ const updateUI = function() {
   displayMovements(currentAccount.movements, currentAccount.movsDesc);
 
   // Calculate and display balance
-  calcPrintBalance(currentAccount);
+  calcDisplayBalance(currentAccount);
 
   // Calculate and display summary
   calcDisplaySummary(currentAccount);
@@ -316,9 +324,9 @@ const updateUI = function() {
 // Event handlers
 btnLogin.addEventListener('click', function(e) {
   e.preventDefault();
-  
+
   currentAccount = accounts.find(acc => acc.username === inputLoginUsername.value);
-  
+
   if(currentAccount?.pin === +inputLoginPin.value) {
     // Display the UI and welcome message
     labelWelcome.textContent = `Welcome back, ${currentAccount.owner.split(' ')[0]}!`;
@@ -409,7 +417,7 @@ btnTransferMessage.addEventListener('click', function(e) {
 btnLoan.addEventListener('click', function(e) {
   e.preventDefault();
 
-  const amount = +(inputLoanAmount.value);
+  const amount = Math.floor(inputLoanAmount.value);
 
   if(amount > 0 && currentAccount.movements.some(mov => mov >= amount * 0.1)) {
     currentAccount.movements.push(amount);
@@ -462,7 +470,7 @@ btnSort.addEventListener('click', () => {
     default:
       sorted = 0;
   }
-  displayMovements(currentAccount.movements, sorted);
+  btnSwitch.classList.contains('movements__switch--requests') ? displayTransferRequests(transferRequests, sorted) : displayMovements(currentAccount.movements, sorted);
 });
 
 btnSwitch.addEventListener('click', function() {
