@@ -96,43 +96,54 @@ button:focus {
   transform: translateY(3px);
 }
 
-.notifications-switch {
+.notifications-switch-container {
   position: absolute;
-  left: 0;
-  bottom: 1rem;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 12rem;
-  height: 4rem;
+  left: 2rem;
+  bottom: 1.5rem;
+}
+
+.notifications-switch-btn {
+  width: 5rem;
+  height: 2.9rem;
+  border-radius: 3rem;
+  padding: .5rem;
+  background-color: grey;
+  transition: all .15s;
+  text-align: unset;
+  cursor: pointer;
+}
+
+.notifications-switch-btn:active {
+  outline: none;
+}
+
+.notifications-switch-btn-inner-circle {
+  display: inline-block;
+  width: 50%;
+  height: 100%;
+  align-self: stretch;
+  border-radius: 50%;
+  background-color: #fff;
+  transition: all .15s;
+}
+
+.notifications-switch-btn--active {
+  background-color: #66c873;
+}
+
+.notifications-switch-btn--active > .notifications-switch-btn-inner-circle {
+  margin-left: 50%;
 }
 
 .notifications-switch__switch {
   position: relative;
   width: 5rem;
   height: 2rem;
-  border: 2px solid #66c873;
+  border: 2px solid ;
   transition: all .25s;
   z-index: 1;
   cursor: pointer;
   box-shadow: 0 2px 5px rgba(0, 0, 0, .25);
-}
-
-.notifications-switch__square {
-  position: absolute;
-  left: 0;
-  display: inline-block;
-  height: 100%;
-  width: 2rem;
-  background-color: #9be15d;
-  transition: all .25s;
-}
-
-.notifications-switch__caption-hider {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  background-color: #f3f3f3;
 }
 
 .notifications-switch__caption {

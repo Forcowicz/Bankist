@@ -17,6 +17,9 @@ let hideNotification;
 // Is currently transfer or request operation visible
 let operationTransferState = false;
 
+// Requests counts for IDs
+let requestCount = 0;
+
 // Data
 const transferRequests = [];
 
@@ -106,7 +109,6 @@ const inputLoanAmount = document.querySelector('.form__input--loan-amount');
 const inputCloseUsername = document.querySelector('.form__input--user');
 const inputClosePin = document.querySelector('.form__input--pin');
 
-const notificationsSwitchContainer = document.getElementById('notifications-switch-container');
 const notificationsSwitch = document.getElementById('notifications-switch');
 const notificationContainer = document.querySelector('.notification');
 const labelNotification = document.querySelector('.notification__info');
@@ -114,7 +116,8 @@ const notificationBtnClose = document.querySelector('.notification__btn');
 
 // Notifications' switch
 notificationsSwitch.addEventListener('click', function() {
-  notificationsSwitchContainer.classList.toggle('notifications-switch--active');
+  this.classList.toggle('notifications-switch-btn--active');
+  displayNotification(`Notifications turned ${notifications ? 'OFF' : 'ON'}.`, 'success', true);
   notifications = !notifications;
 });
 
@@ -123,8 +126,8 @@ const stripTags = function (html) {
   return doc.body.textContent || "";
 }
 
-const displayNotification = function(info, type = 'error') {
-  if(notifications) {
+const displayNotification = function(info, type = 'error', ignore) {
+  if(notifications || ignore) {
     clearTimeout(hideNotification);
 
     // Check the notification character
@@ -454,7 +457,7 @@ btnTransferMessage.addEventListener('click', function(e) {
         message,
         sent: '10-03-2021',
         deadline: '12-03-2021',
-        id: transferRequests.length
+        id: requestCount++
       });
       displayNotification(`You successfuly requested ${amount}€ from ${receiverAcc.owner}!`, 'success');
     } else {
