@@ -99,12 +99,15 @@ const btnFormSwitch = document.getElementById('switchOperations');
 
 const transferOperation = document.querySelector('.operation--transfer');
 
+const transferRequestForm = document.getElementById('request-deadline');
+
 const inputLoginUsername = document.querySelector('.login__input--user');
 const inputLoginPin = document.querySelector('.login__input--pin');
 const inputTransferMessageContainer = document.querySelector('.form__message-popup');
 const inputTransferMessage = document.querySelector('.form__input--message');
 const inputTransferTo = document.querySelector('.form__input--to');
 const inputTransferAmount = document.querySelector('.form__input--amount');
+const inputRequestDeadline = document.getElementById('form__input--deadline');
 const inputLoanAmount = document.querySelector('.form__input--loan-amount');
 const inputCloseUsername = document.querySelector('.form__input--user');
 const inputClosePin = document.querySelector('.form__input--pin');
@@ -408,47 +411,50 @@ btnLogin.addEventListener('click', function(e) {
 });
 
 const getFormInputTransfer = function() {
-  const message = stripTags(inputTransferMessage.value);
-  const amount = +inputTransferAmount.value;
   const receiverAcc = accounts.find(acc => acc.username === inputTransferTo.value);
-  return [message, amount, receiverAcc];
+  const amount = +inputTransferAmount.value;
+  const message = stripTags(inputTransferMessage.value);
+  const deadline = inputRequestDeadline.value;
+  return [receiverAcc, amount, message, deadline];
 }
 
 btnTransfer.addEventListener('click', function(e) {
   e.preventDefault();
 
-  const clearTransferFields = () => inputTransferTo.value = inputTransferAmount.value = '';
-
-  const type = operationTransferState ? 'request' : 'transfer';
-  const [, amount, receiverAcc] = getFormInputTransfer();
-  if(amount > 0 && currentAccount.balance >= amount && receiverAcc?.username && receiverAcc.username !== currentAccount.username) {
+  const toggleMessagePopup = () => {
     inputTransferMessageContainer.classList.remove('hidden');
-  } else if (!receiverAcc?.username) {
-    displayNotification('Receiver does not exist!');
-    clearTransferFields();
-  } else if (amount <= 0) {
-    displayNotification(`You have to ${type} at least 1€!`);
-    clearTransferFields();
-  } else if (currentAccount.balance < amount) {
-    if(operationTransferState) {
-      inputTransferMessageContainer.classList.remove('hidden');
-    } else {
-      displayNotification(`You don't have enough money! Need ${amount - currentAccount.balance}€ more.`);
-      clearTransferFields();
-    }
-  } else if (receiverAcc.username === currentAccount.username) {
-    displayNotification(`You cannot ${type} money ${type === 'transfer' ? 'to' : 'from'} yourself!`);
-    clearTransferFields();
+    inputTransferMessage.focus();
   }
-});
+
+  const [receiverAcc, amount] = getFormInputTransfer();
+
+  // Get the context, if it's a transfer or a request
+  const context = operationTransferState ? ['request', 'from'] : ['transfer', 'to'];
+
+  if(receiverAcc?.username && receiverAcc.username !== currentAccount.username && amount > 0 && currentAccount.balance >= amount) {
+    operationTransferState ? transferRequestForm.style.display = 'block' : transferRequestForm.style.display = 'none';
+    toggleMessagePopup();
+  } else if(!receiverAcc) {
+    displayNotification('The receiver account does not exist.');
+  } else if(receiverAcc.username === currentAccount.username) {
+    displayNotification(`You cannot ${context[0]} money ${context[1]} yourself.`);
+  } else if(amount <= 0) {
+    displayNotification(`You have to ${context[0]} at least 1€.`);
+  } else if(currentAccount.balance < amount) {
+    if(operationTransferState) {
+      toggleMessagePopup();
+    } else {
+      displayNotification(`You don't have enough money. Need ${amount - currentAccount.balance}€ more.`);
+    }
+  }
+ });
 
 btnTransferMessage.addEventListener('click', function(e) {
   e.preventDefault();
 
-  const [message, amount, receiverAcc] = getFormInputTransfer();
-  if (message.length > 25) {
-    displayNotification('Your message is too long!');
-  } else {
+  const [receiverAcc, amount, message, deadline] = getFormInputTransfer();
+
+  if(message.length <= 25) {
     if(operationTransferState) {
       transferRequests.push({
         to: receiverAcc.owner,
@@ -456,7 +462,7 @@ btnTransferMessage.addEventListener('click', function(e) {
         amount,
         message,
         sent: '10-03-2021',
-        deadline: '12-03-2021',
+        deadline,
         id: ++requestCount
       });
       displayNotification(`You successfuly requested ${amount}€ from ${receiverAcc.owner}!`, 'success');
@@ -468,12 +474,14 @@ btnTransferMessage.addEventListener('click', function(e) {
       receiverAcc.movsDesc.set(receiverAcc.movements.length - 1, {source: currentAccount.owner, message, date: '12-02-2021'});
       displayNotification(`You successfuly transfered ${amount}€ to ${receiverAcc.owner}!`, 'success');
     }
-    modifySwitchBtn();
-    updateUI();
+  } else if(message.length > 25) {
+    displayNotification('Your message cannot be longer than 25 characters!');
   }
 
-  inputTransferTo.value = inputTransferMessage.value = inputTransferAmount.value = '';
   inputTransferMessageContainer.classList.add('hidden');
+  inputTransferTo.value = inputTransferAmount.value = inputTransferMessage.value = ''
+  modifySwitchBtn();
+  updateUI();
 });
 
 btnLoan.addEventListener('click', function(e) {

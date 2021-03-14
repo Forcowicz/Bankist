@@ -94,6 +94,10 @@
         <form class='form__message-popup__content'>
           <h3 class='form__header'>Would you like to add a message?</h3>
           <input type='text' maxlength='25' class='form__input form__input--message' />
+          <div id='request-deadline'>
+            <h3 class='form__header'>When is the deadline?</h3>
+            <input type='date' class='form__input form__input--message' id='form__input--deadline' />
+          </div>
           <button class='form__btn form__btn--alternative form__btn--transfer-message'>&rarr;</button>
         </form>
       </div>
@@ -140,12 +144,6 @@
         <span class='notifications-switch-btn-inner-circle'></span>
       </button>
     </div>
-
-<!--    <div class='notifications-switch notifications-switch&#45;&#45;active' id='notifications-switch-container'>-->
-<!--      <div class='notifications-switch__switch' id='notifications-switch'>-->
-<!--        <span class='notifications-switch__square'></span>-->
-<!--      </div>-->
-<!--    </div>-->
 
     <!-- <footer>
       &copy; by Jonas Schmedtmann. Don't claim as your own :)

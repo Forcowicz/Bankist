@@ -548,6 +548,10 @@ h2 {
   transition: all 0.3s;
 }
 
+.form__input--message {
+  margin-bottom: 1rem;
+}
+
 .form__header {
   font-size: 1.8rem;
   font-weight: bold;
@@ -642,6 +646,10 @@ h2 {
   border-radius: 12px;
   box-shadow: 0 2px 10px 5px rgba(0, 0, 0, .15);
   transition: all .25s;
+}
+
+#request-deadline {
+  display: none;
 }
 
 .logout-timer {
