@@ -418,6 +418,8 @@ const getFormInputTransfer = function() {
   return [receiverAcc, amount, message, deadline];
 }
 
+const clearTransferInputFields = () => inputTransferTo.value = inputTransferAmount.value = inputTransferMessage.value = '';
+
 btnTransfer.addEventListener('click', function(e) {
   e.preventDefault();
 
@@ -479,9 +481,17 @@ btnTransferMessage.addEventListener('click', function(e) {
   }
 
   inputTransferMessageContainer.classList.add('hidden');
-  inputTransferTo.value = inputTransferAmount.value = inputTransferMessage.value = ''
+  clearTransferInputFields();
   modifySwitchBtn();
   updateUI();
+});
+
+// Close the message modal by clicking on background
+inputTransferMessageContainer.addEventListener('click', function(e) {
+  if(e.target === inputTransferMessageContainer) {
+    this.classList.add('hidden');
+    clearTransferInputFields();
+  }
 });
 
 btnLoan.addEventListener('click', function(e) {
