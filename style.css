@@ -292,6 +292,27 @@ button:focus {
   background-color: #f6f6f6;
 }
 
+/*.movements__row--removed {*/
+/*  filter: saturate(0.25);*/
+/*}*/
+
+/*.movements__row--removed > .movements__row-horizontal-rule {*/
+/*  visibility: visible;*/
+/*  opacity: 1;*/
+/*}*/
+
+/*.movements__row-horizontal-rule {*/
+/*  position: absolute;*/
+/*  top: 50%;*/
+/*  left: 50%;*/
+/*  transform: translate(-50%, -50%);*/
+/*  height: 1px;*/
+/*  width: 80%;*/
+/*  background-color: #000;*/
+/*  visibility: hidden;*/
+/*  opacity: 0;*/
+/*}*/
+
 .movements__type {
   font-size: 1.1rem;
   text-transform: uppercase;

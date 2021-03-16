@@ -3,7 +3,6 @@
 /////////////////////////////////////////////////
 /////////////////////////////////////////////////
 // BANKIST APP
-// TODO: Cash request
 
 // Display notifications
 let notifications = true;
@@ -18,7 +17,7 @@ let hideNotification;
 let operationTransferState = false;
 
 // Requests counts for IDs
-let requestCount = -1;
+let requestCount = 0;
 
 // Data
 const transferRequests = [];
@@ -186,8 +185,9 @@ const modifySwitchBtn = function(changeTo, runFunction = false) {
 
 const toggleDescriptions = (type, i) => {
   const details = document.querySelector(`#${type}${i} > .movements__details`);
-  document.querySelector(`#${type}${i}`).addEventListener('click', function() {
-    if(Number.parseInt(details.style.maxHeight) > 0) {
+  const movementDOM = document.querySelector(`#${type}${i}`);
+  movementDOM.addEventListener('click', function() {
+    if (Number.parseInt(details.style.maxHeight) > 0) {
       details.style.maxHeight = 0;
     } else {
       details.style.maxHeight = `${details.scrollHeight}px`;
@@ -266,7 +266,7 @@ const setReactButtons = (request, i) => {
 
       removeRequest(request.id);
       displayNotification(`Request accepted. You transfered ${request.amount.toFixed(2)}€ to ${request.from}.`, 'success')
-      updateUI();
+      updateUI(1);
     });
   }
 }
@@ -374,9 +374,11 @@ const calcDisplaySummary = function (account) {
   labelSumInterest.textContent = `${interest.toFixed(2)}€`;
 }
 
-const updateUI = function() {
+const updateUI = function(source) {
+  // Source === 0 - display movements. Switch === 1 - display transfer requests
+
   // Display account's movements
-  displayMovements(currentAccount.movements, currentAccount.movsDesc);
+  source ? displayTransferRequests(transferRequests) : displayMovements(currentAccount.movements, currentAccount.movsDesc);
 
   // Calculate and display balance
   calcDisplayBalance(currentAccount);
@@ -397,7 +399,7 @@ btnLogin.addEventListener('click', function(e) {
     containerApp.style.opacity = '1';
 
     // Display movements and stuff
-    updateUI();
+    updateUI(0);
 
     // Clear the form
     inputLoginUsername.value = inputLoginPin.value = '';
@@ -465,7 +467,7 @@ btnTransferMessage.addEventListener('click', function(e) {
         message,
         sent: '10-03-2021',
         deadline,
-        id: ++requestCount
+        id: requestCount++
       });
       displayNotification(`You successfuly requested ${amount}€ from ${receiverAcc.owner}!`, 'success');
     } else {
@@ -482,8 +484,8 @@ btnTransferMessage.addEventListener('click', function(e) {
 
   inputTransferMessageContainer.classList.add('hidden');
   clearTransferInputFields();
-  modifySwitchBtn();
-  updateUI();
+  modifySwitchBtn(0);
+  updateUI(operationTransferState ? 1 : 0);
 });
 
 // Close the message modal by clicking on background
@@ -504,8 +506,8 @@ btnLoan.addEventListener('click', function(e) {
 
     currentAccount.movsDesc.set(currentAccount.movements.length - 1, {source: 'Bank'});
 
-    updateUI();
-    modifySwitchBtn();
+    updateUI(0);
+    modifySwitchBtn(0);
     inputLoanAmount.value = '';
 
     displayNotification( `Your request for ${amount}€ loan has been approved!`, 'success');
