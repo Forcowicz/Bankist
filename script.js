@@ -272,15 +272,27 @@ const setReactButtons = (request, i) => {
     document.querySelector(`#request${i} .movements__react-button--accept`).addEventListener('click', function() {
       const receiverAcc = accounts.find(acc => acc.owner === request.from);
 
-      currentAccount.movements.push(-request.amount);
-      receiverAcc.movements.push(request.amount);
+      if(currentAccount.balance >= request.amount) {
+        currentAccount.movements.push(-request.amount);
+        receiverAcc.movements.push(request.amount);
 
-      currentAccount.movsDesc.set(currentAccount.movements.length - 1, {source: receiverAcc.owner, message: `Request #${request.id} from ${request.sent}`, date: '12-02-2021'});
-      receiverAcc.movsDesc.set(receiverAcc.movements.length - 1, {source: currentAccount.owner, message: `Request #${request.id} from ${request.sent}`, date: '12-02-2021'});
+        currentAccount.movsDesc.set(currentAccount.movements.length - 1, {
+          source: receiverAcc.owner,
+          message: `Request #${request.id} from ${request.sent}`,
+          date: '12-02-2021'
+        });
+        receiverAcc.movsDesc.set(receiverAcc.movements.length - 1, {
+          source: currentAccount.owner,
+          message: `Request #${request.id} from ${request.sent}`,
+          date: '12-02-2021'
+        });
 
-      removeRequest(request.id);
-      displayNotification(`Request accepted. You transfered ${request.amount.toFixed(2)}€ to ${request.from}.`, 'success')
-      updateUI(1);
+        removeRequest(request.id);
+        displayNotification(`Request accepted. You transfered ${request.amount.toFixed(2)}€ to ${request.from}.`, 'success')
+        updateUI(1);
+      } else {
+        displayNotification(`You don't have enough money. Need ${request.amount - currentAccount.balance}€ more.`);
+      }
     });
   }
 }
