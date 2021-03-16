@@ -19,6 +19,20 @@ let operationTransferState = false;
 // Requests counts for IDs
 let requestCount = 0;
 
+// Date and time
+const getDate = function(time = false) {
+  const now = new Date();
+  const day = `${now.getDate()}`.padStart(2, '0');
+  const month = `${now.getMonth() + 1}`.padStart(2, '0');
+  const year = now.getFullYear();
+  const hour = `${now.getHours()}`.padStart(2, '0');
+  const minute = `${now.getMinutes()}`.padStart(2, '0');
+
+  return time ? `${year}-${month}-${day} ${hour}:${minute}` : `${year}-${month}-${day}`;
+}
+
+
+
 // Data
 const transferRequests = [];
 
@@ -360,7 +374,8 @@ const displayTransferRequests = function(req, sort = 0) {
 const calcDisplayBalance = function (acc) {
   acc.balance = acc.movements.reduce((acc, cur) => acc + cur, 0);
 
-  labelBalance.textContent = `${(acc.balance).toFixed(2)}€`
+  labelBalance.textContent = `${(acc.balance).toFixed(2)}€`;
+  labelDate.textContent = getDate(true);
 };
 
 const calcDisplaySummary = function (account) {
@@ -465,7 +480,7 @@ btnTransferMessage.addEventListener('click', function(e) {
         from: currentAccount.owner,
         amount,
         message,
-        sent: '10-03-2021',
+        sent: `${getDate()}`,
         deadline,
         id: requestCount++
       });
@@ -474,8 +489,8 @@ btnTransferMessage.addEventListener('click', function(e) {
       currentAccount.movements.push(-amount);
       receiverAcc.movements.push(amount);
 
-      currentAccount.movsDesc.set(currentAccount.movements.length - 1, {source: receiverAcc.owner, message, date: '12-02-2021'});
-      receiverAcc.movsDesc.set(receiverAcc.movements.length - 1, {source: currentAccount.owner, message, date: '12-02-2021'});
+      currentAccount.movsDesc.set(currentAccount.movements.length - 1, {source: receiverAcc.owner, message, date: getDate()});
+      receiverAcc.movsDesc.set(receiverAcc.movements.length - 1, {source: currentAccount.owner, message, date: getDate()});
       displayNotification(`You successfuly transfered ${amount}€ to ${receiverAcc.owner}!`, 'success');
     }
   } else if(message.length > 25) {
@@ -504,7 +519,7 @@ btnLoan.addEventListener('click', function(e) {
   if(amount > 0 && currentAccount.movements.some(mov => mov >= amount * 0.1)) {
     currentAccount.movements.push(amount);
 
-    currentAccount.movsDesc.set(currentAccount.movements.length - 1, {source: 'Bank'});
+    currentAccount.movsDesc.set(currentAccount.movements.length - 1, {source: 'Bank', date: getDate()});
 
     updateUI(0);
     modifySwitchBtn(0);
