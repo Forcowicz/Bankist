@@ -45,6 +45,15 @@ const formatDate = function(date) {
   }
 };
 
+const formatMoney = function(money) {
+  const options = {
+    style: 'currency',
+    currency: 'EUR'
+  }
+
+  return new Intl.NumberFormat(navigator.language, options).format(money);
+}
+
 // Data
 const transferRequests = [];
 
@@ -247,7 +256,7 @@ const displayMovements = function(movements, sort = 0) {
       <div class="movements__row" id=movement${i}>
         <div class='movements__main'>
           <div class="movements__type movements__type--${type}">${i + 1} ${type === 'positive' ? 'deposit' : 'withdrawal'}</div>
-          <div class="movements__value movements__value--margin">${value.toFixed(2)}€</div>
+          <div class="movements__value movements__value--margin">${formatMoney(value)}</div>
         </div>
         <div class='movements__details'>
           <div class='movements__details-row'>
@@ -300,10 +309,10 @@ const setReactButtons = (request, i) => {
         });
 
         removeRequest(request.id);
-        displayNotification(`Request accepted. You transfered ${request.amount.toFixed(2)}€ to ${request.from}.`, 'success');
+        displayNotification(`Request accepted. You transfered ${formatMoney(request.amount)} to ${request.from}.`, 'success');
         updateUI(1);
       } else {
-        displayNotification(`You don't have enough money. Need ${request.amount - currentAccount.balance}€ more.`);
+        displayNotification(`You don't have enough money. Need ${formatMoney(request.amount - currentAccount.balance)} more.`);
       }
     });
   }
@@ -366,7 +375,7 @@ const displayTransferRequests = function(req, sort = 0) {
           <div class='movements__type movements__type--${type}'>${i + 1} request</div>
           <span class='movements__from'>${type === 'positive' ? 'To: ' : 'From: '}${type === 'positive' ? request.to : request.from}</span>
           ${displayReactButtons(type)}
-          <div class='movements__value'>${(request.amount).toFixed(2)}€</div>
+          <div class='movements__value'>${formatMoney(request.amount)}</div>
         </div>
         <div class='movements__details'>
           <div class='movements__details-row'>
@@ -401,7 +410,7 @@ const displayTransferRequests = function(req, sort = 0) {
 const calcDisplayBalance = function(acc) {
   acc.balance = acc.movements.reduce((acc, cur) => acc + cur, 0);
 
-  labelBalance.textContent = `${(acc.balance).toFixed(2)}€`;
+  labelBalance.textContent = `${formatMoney(currentAccount.balance)}`;
 
   const options = {
     year: 'numeric',
@@ -416,13 +425,13 @@ const calcDisplayBalance = function(acc) {
 
 const calcDisplaySummary = function(account) {
   const incomes = account.movements.filter(mov => mov > 0).reduce((acc, mov) => acc + mov, 0);
-  labelSumIn.textContent = `${incomes.toFixed(2)}€`;
+  labelSumIn.textContent = `${formatMoney(incomes)}`;
 
   const outcomes = account.movements.filter(mov => mov < 0).reduce((acc, mov) => acc + mov, 0);
-  labelSumOut.textContent = `${Math.abs(outcomes.toFixed(2))}€`;
+  labelSumOut.textContent = `${formatMoney(Math.abs(outcomes))}`;
 
   const interest = account.movements.filter(mov => mov > 0).map(mov => mov * account.interestRate / 100).reduce((acc, int) => int >= 1 ? acc + int : acc, 0);
-  labelSumInterest.textContent = `${interest.toFixed(2)}€`;
+  labelSumInterest.textContent = `${formatMoney(interest)}`;
 };
 
 const updateUI = function(source) {
@@ -500,7 +509,7 @@ btnTransfer.addEventListener('click', function(e) {
     if (operationTransferState) {
       toggleMessagePopup();
     } else {
-      displayNotification(`You don't have enough money. Need ${amount - currentAccount.balance}€ more.`);
+      displayNotification(`You don't have enough money. Need ${formatMoney(amount - currentAccount.balance)} more.`);
     }
   }
 });
@@ -521,7 +530,7 @@ btnTransferMessage.addEventListener('click', function(e) {
         deadline,
         id: requestCount++
       });
-      displayNotification(`You successfuly requested ${amount}€ from ${receiverAcc.owner}!`, 'success');
+      displayNotification(`You successfuly requested ${formatMoney(amount)} from ${receiverAcc.owner}!`, 'success');
     } else {
       currentAccount.movements.push(-amount);
       receiverAcc.movements.push(amount);
@@ -536,7 +545,7 @@ btnTransferMessage.addEventListener('click', function(e) {
         message,
         date: getDate()
       });
-      displayNotification(`You successfuly transfered ${amount}€ to ${receiverAcc.owner}!`, 'success');
+      displayNotification(`You successfuly transfered ${formatMoney(amount)} to ${receiverAcc.owner}!`, 'success');
     }
   } else if (message.length > 25) {
     displayNotification('Your message cannot be longer than 25 characters!');
@@ -570,11 +579,11 @@ btnLoan.addEventListener('click', function(e) {
     modifySwitchBtn(0);
     inputLoanAmount.value = '';
 
-    displayNotification(`Your request for ${amount}€ loan has been approved!`, 'success');
+    displayNotification(`Your request for ${formatMoney(amount)} loan has been approved!`, 'success');
   } else if (amount <= 0) {
     displayNotification('Requested amount must be at least 1€!');
   } else {
-    displayNotification(`The maximum loan you can take is ${currentAccount.movements.reduce((acc, mov) => mov > acc ? acc = mov : acc, 0) * 10}€!`);
+    displayNotification(`The maximum loan you can take is ${formatMoney(currentAccount.movements.reduce((acc, mov) => mov > acc ? acc = mov : acc, 0) * 10)}!`);
   }
 });
 
