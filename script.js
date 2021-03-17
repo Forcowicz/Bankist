@@ -29,21 +29,21 @@ const getDate = function(time = false) {
   const minute = `${now.getMinutes()}`.padStart(2, '0');
 
   return time ? `${year}-${month}-${day} ${hour}:${minute}` : `${year}-${month}-${day}`;
-}
+};
 
 const formatDate = function(date) {
   const daysPassed = Math.floor(Math.abs(new Date() - new Date(date)) / (1000 * 60 * 60 * 24));
-  if(Number.isNaN(daysPassed)) return null;
-  if(daysPassed === 0) {
+  if (Number.isNaN(daysPassed)) return null;
+  if (daysPassed === 0) {
     return 'Today';
-  } else if(daysPassed === 1) {
+  } else if (daysPassed === 1) {
     return 'Yesterday';
-  } else if(daysPassed <= 7) {
+  } else if (daysPassed <= 7) {
     return 'This week';
   } else {
     return `${daysPassed} days ago`;
   }
-}
+};
 
 // Data
 const transferRequests = [];
@@ -53,7 +53,7 @@ const account1 = {
   movements: [200, 450, -400, 3000, -650, -130, 70, 1300],
   interestRate: 1.2, // %
   pin: 1111,
-  movsDesc: new Map([[0, {}], [1, {}], [2, {}], [3, {}], [4, {}], [5, {}], [6, {}], [7, {}]]),
+  movsDesc: new Map([[0, {}], [1, {}], [2, {}], [3, {}], [4, {}], [5, {}], [6, {}], [7, {}]])
 };
 
 const account2 = {
@@ -61,7 +61,7 @@ const account2 = {
   movements: [5000, 3400, -150, -790, -3210, -1000, 8500, -30],
   interestRate: 1.5,
   pin: 2222,
-  movsDesc: new Map([[0, {}], [1, {}], [2, {}], [3, {}], [4, {}], [5, {}], [6, {}], [7, {}], [8, {}]]),
+  movsDesc: new Map([[0, {}], [1, {}], [2, {}], [3, {}], [4, {}], [5, {}], [6, {}], [7, {}], [8, {}]])
 };
 
 const account3 = {
@@ -69,7 +69,7 @@ const account3 = {
   movements: [200, -200, 340, -300, -20, 50, 400, -460],
   interestRate: 0.7,
   pin: 3333,
-  movsDesc: new Map([[0, {}], [1, {}], [2, {}], [3, {}], [4, {}], [5, {}], [6, {}], [7, {}]]),
+  movsDesc: new Map([[0, {}], [1, {}], [2, {}], [3, {}], [4, {}], [5, {}], [6, {}], [7, {}]])
 };
 
 const account4 = {
@@ -77,7 +77,7 @@ const account4 = {
   movements: [430, 1000, 700, 50, 90],
   interestRate: 1,
   pin: 4444,
-  movsDesc: new Map([[0, {}], [1, {}], [2, {}], [3, {}], [4, {}]]),
+  movsDesc: new Map([[0, {}], [1, {}], [2, {}], [3, {}], [4, {}]])
 };
 
 const account5 = {
@@ -85,7 +85,7 @@ const account5 = {
   movements: [1300, -2000, 3900, 15020, 2],
   interestRate: 1,
   pin: 5555,
-  movsDesc: new Map([[0, {}], [1, {}], [2, {date: new Date('2021-03-07').toISOString()}], [3, {date: new Date('2021-03-16').toISOString()}], [4, {date: new Date('2021-03-16').toISOString()}]]),
+  movsDesc: new Map([[0, {}], [1, {}], [2, { date: new Date('2021-03-07').toISOString() }], [3, { date: new Date('2021-03-16').toISOString() }], [4, { date: new Date('2021-03-16').toISOString() }]])
 };
 
 const account6 = {
@@ -93,7 +93,7 @@ const account6 = {
   movements: [300, -500, 100, 1, 20, -15, -300, 1337],
   interestRate: 1,
   pin: 5555,
-  movsDesc: new Map([[0, {}], [1, {}], [2, {}], [3, {}], [4, {}], [5, {}], [6, {}], [7, {}]]),
+  movsDesc: new Map([[0, {}], [1, {}], [2, {}], [3, {}], [4, {}], [5, {}], [6, {}], [7, {}]])
 };
 
 const accounts = [account1, account2, account3, account4, account5, account6];
@@ -149,13 +149,13 @@ notificationsSwitch.addEventListener('click', function() {
   notifications = !notifications;
 });
 
-const stripTags = function (html) {
+const stripTags = function(html) {
   let doc = new DOMParser().parseFromString(html, 'text/html');
-  return doc.body.textContent || "";
-}
+  return doc.body.textContent || '';
+};
 
 const displayNotification = function(info, type = 'error', ignore) {
-  if(notifications || ignore) {
+  if (notifications || ignore) {
     clearTimeout(hideNotification);
 
     // Check the notification character
@@ -178,10 +178,10 @@ const displayNotification = function(info, type = 'error', ignore) {
       }
     }, 7000);
   }
-}
+};
 
-const createUsernames = function (accs) {
-  accs.forEach(function (account) {
+const createUsernames = function(accs) {
+  accs.forEach(function(account) {
     account.username = account.owner
       .toLowerCase()
       .split(' ')
@@ -194,17 +194,17 @@ createUsernames(accounts);
 
 const modifySwitchBtn = function(changeTo, runFunction = false) {
   // 0: Change to movements, 1: Change to requests, Other: Don't change
-  if(changeTo === 0) {
+  if (changeTo === 0) {
     btnSwitch.classList.add('movements__switch--movements');
     btnSwitch.classList.remove('movements__switch--requests');
     btnSwitchLabel.textContent = 'Movements';
-  } else if(changeTo === 1) {
+  } else if (changeTo === 1) {
     btnSwitch.classList.remove('movements__switch--movements');
     btnSwitch.classList.add('movements__switch--requests');
     btnSwitchLabel.textContent = 'Requests';
   }
 
-  if(runFunction) {
+  if (runFunction) {
     changeTo === 0 ? displayMovements(currentAccount.movements) : displayTransferRequests(transferRequests);
   }
 };
@@ -223,11 +223,11 @@ const toggleDescriptions = (type, i) => {
 
 // This function creates DOM elements, displays movements
 const displayMovements = function(movements, sort = 0) {
- containerMovements.innerHTML = '';
- modifySwitchBtn(0);
+  containerMovements.innerHTML = '';
+  modifySwitchBtn(0);
 
- let movs;
-  switch(sort) {
+  let movs;
+  switch (sort) {
     case 1:
       movs = movements.map((el, i) => [el, i]).sort((a, b) => a[0] - b[0]);
       break;
@@ -271,20 +271,20 @@ const displayMovements = function(movements, sort = 0) {
     // Display descriptions
     toggleDescriptions('movement', i);
   });
-}
+};
 
 const setReactButtons = (request, i) => {
 
   document.querySelector(`#request${i} .movements__react-button--decline`).addEventListener('click', function() {
     removeRequest(request.id);
-    updateUI();
+    updateUI(1);
   });
 
-  if(document.querySelector(`#request${i} .movements__react-button--accept`)) {
+  if (document.querySelector(`#request${i} .movements__react-button--accept`)) {
     document.querySelector(`#request${i} .movements__react-button--accept`).addEventListener('click', function() {
       const receiverAcc = accounts.find(acc => acc.owner === request.from);
 
-      if(currentAccount.balance >= request.amount) {
+      if (currentAccount.balance >= request.amount) {
         currentAccount.movements.push(-request.amount);
         receiverAcc.movements.push(request.amount);
 
@@ -300,17 +300,17 @@ const setReactButtons = (request, i) => {
         });
 
         removeRequest(request.id);
-        displayNotification(`Request accepted. You transfered ${request.amount.toFixed(2)}€ to ${request.from}.`, 'success')
+        displayNotification(`Request accepted. You transfered ${request.amount.toFixed(2)}€ to ${request.from}.`, 'success');
         updateUI(1);
       } else {
         displayNotification(`You don't have enough money. Need ${request.amount - currentAccount.balance}€ more.`);
       }
     });
   }
-}
+};
 
 const displayReactButtons = type => {
-  if(type === 'positive') {
+  if (type === 'positive') {
     return `
       <div class='movements-react-button-container'>
          <button type='button' class='movements__react-button movements__react-button--decline'>
@@ -319,7 +319,7 @@ const displayReactButtons = type => {
           </svg>
         </button>
       </div>
-    `
+    `;
   } else {
     return `
       <div class='movements-react-button-container'>
@@ -334,19 +334,21 @@ const displayReactButtons = type => {
           </svg>
         </button>
       </div>
-    `
+    `;
   }
-}
+};
 
 const removeRequest = id => transferRequests.splice(id, 1);
 
 // This function displays transfer requests with their descriptions in form of movements
 const displayTransferRequests = function(req, sort = 0) {
+  const isExpiring = date => Math.floor(Math.abs(new Date(date) - new Date()) / (1000 * 60 * 60 * 24)) <= 7;
+
   containerMovements.innerHTML = '';
   modifySwitchBtn(1);
 
   let requests = req.filter(request => request.to === currentAccount.owner || request.from === currentAccount.owner);
-  switch(sort) {
+  switch (sort) {
     case 0:
       requests.sort((a, b) => a.amount - b.amount);
       break;
@@ -359,7 +361,7 @@ const displayTransferRequests = function(req, sort = 0) {
     const type = currentAccount.owner === request.from ? 'positive' : 'negative';
     const source = request.from === currentAccount.owner ? 'to' : 'from';
     const html = `
-      <div class="movements__row" id="request${i}">
+      <div class="movements__row ${isExpiring(request.deadline) ? 'movements__row--important' : ''}" id="request${i}">
         <div class='movements__main'>
           <div class='movements__type movements__type--${type}'>${i + 1} request</div>
           <span class='movements__from'>${type === 'positive' ? 'To: ' : 'From: '}${type === 'positive' ? request.to : request.from}</span>
@@ -377,7 +379,7 @@ const displayTransferRequests = function(req, sort = 0) {
           </div>
           <div class='movements__details-row'>
             <span class='movements__details-column'>Sent:</span>
-            <span class='movements__details-column'>${request.sent}</span>
+            <span class='movements__details-column'>${formatDate(request.sent)}</span>
           </div>
           <div class='movements__details-row'>
             <span class='movements__details-column'>Valid until:</span>
@@ -394,9 +396,9 @@ const displayTransferRequests = function(req, sort = 0) {
 
     setReactButtons(request, i);
   });
-}
+};
 
-const calcDisplayBalance = function (acc) {
+const calcDisplayBalance = function(acc) {
   acc.balance = acc.movements.reduce((acc, cur) => acc + cur, 0);
 
   labelBalance.textContent = `${(acc.balance).toFixed(2)}€`;
@@ -407,21 +409,21 @@ const calcDisplayBalance = function (acc) {
     day: 'numeric',
     hour: 'numeric',
     minute: 'numeric'
-  }
+  };
 
   labelDate.textContent = new Intl.DateTimeFormat(navigator.language, options).format(new Date());
 };
 
-const calcDisplaySummary = function (account) {
+const calcDisplaySummary = function(account) {
   const incomes = account.movements.filter(mov => mov > 0).reduce((acc, mov) => acc + mov, 0);
   labelSumIn.textContent = `${incomes.toFixed(2)}€`;
 
   const outcomes = account.movements.filter(mov => mov < 0).reduce((acc, mov) => acc + mov, 0);
   labelSumOut.textContent = `${Math.abs(outcomes.toFixed(2))}€`;
 
-  const interest = account.movements.filter(mov => mov > 0).map(mov => mov * account.interestRate / 100).reduce((acc, int) => int >= 1 ? acc + int : acc ,0);
+  const interest = account.movements.filter(mov => mov > 0).map(mov => mov * account.interestRate / 100).reduce((acc, int) => int >= 1 ? acc + int : acc, 0);
   labelSumInterest.textContent = `${interest.toFixed(2)}€`;
-}
+};
 
 const updateUI = function(source) {
   // Source === 0 - display movements. Switch === 1 - display transfer requests
@@ -434,7 +436,7 @@ const updateUI = function(source) {
 
   // Calculate and display summary
   calcDisplaySummary(currentAccount);
-}
+};
 
 // Event handlers
 btnLogin.addEventListener('click', function(e) {
@@ -442,10 +444,11 @@ btnLogin.addEventListener('click', function(e) {
 
   currentAccount = accounts.find(acc => acc.username === inputLoginUsername.value);
 
-  if(currentAccount?.pin === +inputLoginPin.value) {
+  if (currentAccount?.pin === +inputLoginPin.value) {
     // Display the UI and welcome message
     labelWelcome.textContent = `Welcome back, ${currentAccount.owner.split(' ')[0]}!`;
     containerApp.style.opacity = '1';
+    containerApp.style.visibility = 'visible';
 
     // Display movements and stuff
     updateUI(0);
@@ -467,7 +470,7 @@ const getFormInputTransfer = function() {
   const message = stripTags(inputTransferMessage.value);
   const deadline = inputRequestDeadline.value;
   return [receiverAcc, amount, message, deadline];
-}
+};
 
 const clearTransferInputFields = () => inputTransferTo.value = inputTransferAmount.value = inputTransferMessage.value = '';
 
@@ -477,38 +480,38 @@ btnTransfer.addEventListener('click', function(e) {
   const toggleMessagePopup = () => {
     inputTransferMessageContainer.classList.remove('hidden');
     inputTransferMessage.focus();
-  }
+  };
 
   const [receiverAcc, amount] = getFormInputTransfer();
 
   // Get the context, if it's a transfer or a request
   const context = operationTransferState ? ['request', 'from'] : ['transfer', 'to'];
 
-  if(receiverAcc?.username && receiverAcc.username !== currentAccount.username && amount > 0 && currentAccount.balance >= amount) {
+  if (receiverAcc?.username && receiverAcc.username !== currentAccount.username && amount > 0 && currentAccount.balance >= amount) {
     operationTransferState ? transferRequestForm.style.display = 'block' : transferRequestForm.style.display = 'none';
     toggleMessagePopup();
-  } else if(!receiverAcc) {
+  } else if (!receiverAcc) {
     displayNotification('The receiver account does not exist.');
-  } else if(receiverAcc.username === currentAccount.username) {
+  } else if (receiverAcc.username === currentAccount.username) {
     displayNotification(`You cannot ${context[0]} money ${context[1]} yourself.`);
-  } else if(amount <= 0) {
+  } else if (amount <= 0) {
     displayNotification(`You have to ${context[0]} at least 1€.`);
-  } else if(currentAccount.balance < amount) {
-    if(operationTransferState) {
+  } else if (currentAccount.balance < amount) {
+    if (operationTransferState) {
       toggleMessagePopup();
     } else {
       displayNotification(`You don't have enough money. Need ${amount - currentAccount.balance}€ more.`);
     }
   }
- });
+});
 
 btnTransferMessage.addEventListener('click', function(e) {
   e.preventDefault();
 
   const [receiverAcc, amount, message, deadline] = getFormInputTransfer();
 
-  if(message.length <= 25) {
-    if(operationTransferState) {
+  if (message.length <= 25) {
+    if (operationTransferState) {
       transferRequests.push({
         to: receiverAcc.owner,
         from: currentAccount.owner,
@@ -523,11 +526,19 @@ btnTransferMessage.addEventListener('click', function(e) {
       currentAccount.movements.push(-amount);
       receiverAcc.movements.push(amount);
 
-      currentAccount.movsDesc.set(currentAccount.movements.length - 1, {source: receiverAcc.owner, message, date: getDate()});
-      receiverAcc.movsDesc.set(receiverAcc.movements.length - 1, {source: currentAccount.owner, message, date: getDate()});
+      currentAccount.movsDesc.set(currentAccount.movements.length - 1, {
+        source: receiverAcc.owner,
+        message,
+        date: getDate()
+      });
+      receiverAcc.movsDesc.set(receiverAcc.movements.length - 1, {
+        source: currentAccount.owner,
+        message,
+        date: getDate()
+      });
       displayNotification(`You successfuly transfered ${amount}€ to ${receiverAcc.owner}!`, 'success');
     }
-  } else if(message.length > 25) {
+  } else if (message.length > 25) {
     displayNotification('Your message cannot be longer than 25 characters!');
   }
 
@@ -539,7 +550,7 @@ btnTransferMessage.addEventListener('click', function(e) {
 
 // Close the message modal by clicking on background
 inputTransferMessageContainer.addEventListener('click', function(e) {
-  if(e.target === inputTransferMessageContainer) {
+  if (e.target === inputTransferMessageContainer) {
     this.classList.add('hidden');
     clearTransferInputFields();
   }
@@ -550,42 +561,43 @@ btnLoan.addEventListener('click', function(e) {
 
   const amount = Math.floor(inputLoanAmount.value);
 
-  if(amount > 0 && currentAccount.movements.some(mov => mov >= amount * 0.1)) {
+  if (amount > 0 && currentAccount.movements.some(mov => mov >= amount * 0.1)) {
     currentAccount.movements.push(amount);
 
-    currentAccount.movsDesc.set(currentAccount.movements.length - 1, {source: 'Bank', date: getDate()});
+    currentAccount.movsDesc.set(currentAccount.movements.length - 1, { source: 'Bank', date: getDate() });
 
     updateUI(0);
     modifySwitchBtn(0);
     inputLoanAmount.value = '';
 
-    displayNotification( `Your request for ${amount}€ loan has been approved!`, 'success');
-  } else if(amount <= 0) {
+    displayNotification(`Your request for ${amount}€ loan has been approved!`, 'success');
+  } else if (amount <= 0) {
     displayNotification('Requested amount must be at least 1€!');
   } else {
     displayNotification(`The maximum loan you can take is ${currentAccount.movements.reduce((acc, mov) => mov > acc ? acc = mov : acc, 0) * 10}€!`);
   }
 });
 
-btnClose.addEventListener('click', function(e){
+btnClose.addEventListener('click', function(e) {
   e.preventDefault();
 
-  if(inputCloseUsername.value === currentAccount.username && +(inputClosePin.value) === currentAccount.pin) {
+  if (inputCloseUsername.value === currentAccount.username && +(inputClosePin.value) === currentAccount.pin) {
     const index = accounts.findIndex(acc => acc.username === currentAccount.username);
 
     accounts.splice(index, 1);
 
     // Hide UI
     containerApp.style.opacity = '0';
+    containerApp.style.visibility = 'hidden';
 
     // Clear the fields
     inputCloseUsername.value = inputClosePin.value = '';
 
     displayNotification(`Your account, ${currentAccount.owner} has been successfuly deleted!`, 'success');
-  } else if(inputCloseUsername.value !== currentAccount.username) {
+  } else if (inputCloseUsername.value !== currentAccount.username) {
     displayNotification('Wrong account username!');
-  } else if(+inputClosePin.value !== currentAccount.pin) {
-    displayNotification( 'Wrong PIN!');
+  } else if (+inputClosePin.value !== currentAccount.pin) {
+    displayNotification('Wrong PIN!');
   }
 });
 
@@ -611,7 +623,7 @@ btnSwitch.addEventListener('click', function() {
 btnFormSwitch.addEventListener('click', function(e) {
   e.preventDefault();
 
-  if(operationTransferState) {
+  if (operationTransferState) {
     operationTransferHeading.textContent = 'Transfer money';
     operationTransferFromLabel.textContent = 'Transfer to';
   } else {
