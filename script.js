@@ -33,6 +33,7 @@ const getDate = function(time = false) {
 
 const formatDate = function(date) {
   const daysPassed = Math.floor(Math.abs(new Date() - new Date(date)) / (1000 * 60 * 60 * 24));
+  if(Number.isNaN(daysPassed)) return null;
   if(daysPassed === 0) {
     return 'Today';
   } else if(daysPassed === 1) {
@@ -259,7 +260,7 @@ const displayMovements = function(movements, sort = 0) {
           </div>
           <div class='movements__details-row'>
             <span class='movements__details-column'>Sent:</span>
-            <span class='movements__details-column'>${formatDate(getDate(movementDescriptionObject.date)) || 'N/A'}</span>
+            <span class='movements__details-column'>${formatDate(movementDescriptionObject.date) || 'N/A'}</span>
           </div>
         </div>
       </div>
