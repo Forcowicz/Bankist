@@ -31,7 +31,18 @@ const getDate = function(time = false) {
   return time ? `${year}-${month}-${day} ${hour}:${minute}` : `${year}-${month}-${day}`;
 }
 
-
+const formatDate = function(date) {
+  const daysPassed = Math.floor(Math.abs(new Date() - new Date(date)) / (1000 * 60 * 60 * 24));
+  if(daysPassed === 0) {
+    return 'Today';
+  } else if(daysPassed === 1) {
+    return 'Yesterday';
+  } else if(daysPassed <= 7) {
+    return 'This week';
+  } else {
+    return `${daysPassed} days ago`;
+  }
+}
 
 // Data
 const transferRequests = [];
@@ -73,7 +84,7 @@ const account5 = {
   movements: [1300, -2000, 3900, 15020, 2],
   interestRate: 1,
   pin: 5555,
-  movsDesc: new Map([[0, {}], [1, {}], [2, {}], [3, {}], [4, {}]]),
+  movsDesc: new Map([[0, {}], [1, {}], [2, {date: new Date('2021-03-07').toISOString()}], [3, {date: new Date('2021-03-16').toISOString()}], [4, {date: new Date('2021-03-16').toISOString()}]]),
 };
 
 const account6 = {
@@ -248,7 +259,7 @@ const displayMovements = function(movements, sort = 0) {
           </div>
           <div class='movements__details-row'>
             <span class='movements__details-column'>Sent:</span>
-            <span class='movements__details-column'>${movementDescriptionObject.date || 'N/A'}</span>
+            <span class='movements__details-column'>${formatDate(getDate(movementDescriptionObject.date)) || 'N/A'}</span>
           </div>
         </div>
       </div>
@@ -383,11 +394,21 @@ const displayTransferRequests = function(req, sort = 0) {
     setReactButtons(request, i);
   });
 }
+
 const calcDisplayBalance = function (acc) {
   acc.balance = acc.movements.reduce((acc, cur) => acc + cur, 0);
 
   labelBalance.textContent = `${(acc.balance).toFixed(2)}€`;
-  labelDate.textContent = getDate(true);
+
+  const options = {
+    year: 'numeric',
+    month: 'numeric',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: 'numeric'
+  }
+
+  labelDate.textContent = new Intl.DateTimeFormat(navigator.language, options).format(new Date());
 };
 
 const calcDisplaySummary = function (account) {
