@@ -48,64 +48,42 @@ const formatDate = function(date) {
 const formatMoney = function(money) {
   const options = {
     style: 'currency',
-    currency: 'EUR'
+    currency: currentAccount.currency,
+    useGrouping: false
   }
 
   return new Intl.NumberFormat(navigator.language, options).format(money);
 }
 
+const modal = {
+  container: document.querySelector('.modal'),
+  heading: document.querySelector('.modal__heading'),
+  input: document.querySelector('.modal__input'),
+  btn: document.querySelector('.modal__btn'),
+  openModal(heading, inputPlaceholder, btnAction) {
+    this.heading.textContent = heading;
+    this.input.placeholder = inputPlaceholder;
+
+    this.container.classList.remove('hidden');
+    this.input.focus();
+
+    this.btn.addEventListener('click', btnAction);
+  },
+  closeModal() {
+    this.container.classList.add('hidden');
+  }
+}
+
+// Close the message modal by clicking on background
+modal.container.addEventListener('click', function(e) {
+  if (e.target === modal.container) {
+    this.classList.add('hidden');
+    clearTransferInputFields();
+  }
+});
+
 // Data
 const transferRequests = [];
-
-const account1 = {
-  owner: 'Jonas Schmedtmann',
-  movements: [200, 450, -400, 3000, -650, -130, 70, 1300],
-  interestRate: 1.2, // %
-  pin: 1111,
-  movsDesc: new Map([[0, {}], [1, {}], [2, {}], [3, {}], [4, {}], [5, {}], [6, {}], [7, {}]])
-};
-
-const account2 = {
-  owner: 'Jessica Davis',
-  movements: [5000, 3400, -150, -790, -3210, -1000, 8500, -30],
-  interestRate: 1.5,
-  pin: 2222,
-  movsDesc: new Map([[0, {}], [1, {}], [2, {}], [3, {}], [4, {}], [5, {}], [6, {}], [7, {}], [8, {}]])
-};
-
-const account3 = {
-  owner: 'Steven Thomas Williams',
-  movements: [200, -200, 340, -300, -20, 50, 400, -460],
-  interestRate: 0.7,
-  pin: 3333,
-  movsDesc: new Map([[0, {}], [1, {}], [2, {}], [3, {}], [4, {}], [5, {}], [6, {}], [7, {}]])
-};
-
-const account4 = {
-  owner: 'Sarah Smith',
-  movements: [430, 1000, 700, 50, 90],
-  interestRate: 1,
-  pin: 4444,
-  movsDesc: new Map([[0, {}], [1, {}], [2, {}], [3, {}], [4, {}]])
-};
-
-const account5 = {
-  owner: 'Sławomir Węglarz',
-  movements: [1300, -2000, 3900, 15020, 2],
-  interestRate: 1,
-  pin: 5555,
-  movsDesc: new Map([[0, {}], [1, {}], [2, { date: new Date('2021-03-07').toISOString() }], [3, { date: new Date('2021-03-16').toISOString() }], [4, { date: new Date('2021-03-16').toISOString() }]])
-};
-
-const account6 = {
-  owner: 'Michał Wojtusiak',
-  movements: [300, -500, 100, 1, 20, -15, -300, 1337],
-  interestRate: 1,
-  pin: 5555,
-  movsDesc: new Map([[0, {}], [1, {}], [2, {}], [3, {}], [4, {}], [5, {}], [6, {}], [7, {}]])
-};
-
-const accounts = [account1, account2, account3, account4, account5, account6];
 
 // Elements
 const labelWelcome = document.querySelector('.welcome');
@@ -130,6 +108,7 @@ const btnClose = document.querySelector('.form__btn--close');
 const btnSort = document.querySelector('.btn--sort');
 const btnSwitch = document.getElementById('btn-switch');
 const btnFormSwitch = document.getElementById('switchOperations');
+const btnChangeCurrency = document.getElementById('change-currency-btn');
 
 const transferOperation = document.querySelector('.operation--transfer');
 
@@ -137,8 +116,6 @@ const transferRequestForm = document.getElementById('request-deadline');
 
 const inputLoginUsername = document.querySelector('.login__input--user');
 const inputLoginPin = document.querySelector('.login__input--pin');
-const inputTransferMessageContainer = document.querySelector('.form__message-popup');
-const inputTransferMessage = document.querySelector('.form__input--message');
 const inputTransferTo = document.querySelector('.form__input--to');
 const inputTransferAmount = document.querySelector('.form__input--amount');
 const inputRequestDeadline = document.getElementById('form__input--deadline');
@@ -476,29 +453,28 @@ btnLogin.addEventListener('click', function(e) {
 const getFormInputTransfer = function() {
   const receiverAcc = accounts.find(acc => acc.username === inputTransferTo.value);
   const amount = +inputTransferAmount.value;
-  const message = stripTags(inputTransferMessage.value);
+  const message = stripTags(modal.input.value);
   const deadline = inputRequestDeadline.value;
   return [receiverAcc, amount, message, deadline];
 };
 
-const clearTransferInputFields = () => inputTransferTo.value = inputTransferAmount.value = inputTransferMessage.value = '';
+const clearTransferInputFields = () => inputTransferTo.value = inputTransferAmount.value = modal.input.value = '';
 
 btnTransfer.addEventListener('click', function(e) {
   e.preventDefault();
 
-  const toggleMessagePopup = () => {
-    inputTransferMessageContainer.classList.remove('hidden');
-    inputTransferMessage.focus();
-  };
-
   const [receiverAcc, amount] = getFormInputTransfer();
+
+  const openMessagePopup = () => {
+    modal.openModal('Enter a message', '', transferMessage);
+  }
 
   // Get the context, if it's a transfer or a request
   const context = operationTransferState ? ['request', 'from'] : ['transfer', 'to'];
 
   if (receiverAcc?.username && receiverAcc.username !== currentAccount.username && amount > 0 && currentAccount.balance >= amount) {
     operationTransferState ? transferRequestForm.style.display = 'block' : transferRequestForm.style.display = 'none';
-    toggleMessagePopup();
+    openMessagePopup();
   } else if (!receiverAcc) {
     displayNotification('The receiver account does not exist.');
   } else if (receiverAcc.username === currentAccount.username) {
@@ -507,16 +483,14 @@ btnTransfer.addEventListener('click', function(e) {
     displayNotification(`You have to ${context[0]} at least 1€.`);
   } else if (currentAccount.balance < amount) {
     if (operationTransferState) {
-      toggleMessagePopup();
+      openMessagePopup();
     } else {
       displayNotification(`You don't have enough money. Need ${formatMoney(amount - currentAccount.balance)} more.`);
     }
   }
 });
 
-btnTransferMessage.addEventListener('click', function(e) {
-  e.preventDefault();
-
+const transferMessage = function() {
   const [receiverAcc, amount, message, deadline] = getFormInputTransfer();
 
   if (message.length <= 25) {
@@ -551,19 +525,12 @@ btnTransferMessage.addEventListener('click', function(e) {
     displayNotification('Your message cannot be longer than 25 characters!');
   }
 
-  inputTransferMessageContainer.classList.add('hidden');
+  modal.closeModal();
   clearTransferInputFields();
   modifySwitchBtn(0);
   updateUI(operationTransferState ? 1 : 0);
-});
-
-// Close the message modal by clicking on background
-inputTransferMessageContainer.addEventListener('click', function(e) {
-  if (e.target === inputTransferMessageContainer) {
-    this.classList.add('hidden');
-    clearTransferInputFields();
-  }
-});
+  modal.btn.removeEventListener('click', transferMessage);
+};
 
 btnLoan.addEventListener('click', function(e) {
   e.preventDefault();

@@ -40,6 +40,26 @@ button:focus {
   outline: none;
 }
 
+.btn-text {
+  display: inline-block;
+  font-size: 1.25rem;
+  background-color: unset;
+  border: none;
+  color: inherit;
+  transition: color .15s;
+  cursor: pointer;
+  text-decoration: underline;
+  float: right;
+}
+
+.btn-text:hover {
+  color: #888;
+}
+
+.btn-text:active {
+  outline: none;
+}
+
 .notification {
   display: flex;
   justify-content: space-evenly;
@@ -543,7 +563,7 @@ h2 {
 }
 /* End exceptions */
 
-.form__input {
+.form__input, .modal__input {
   width: 100%;
   border: none;
   background-color: rgba(255, 255, 255, 0.4);
@@ -556,19 +576,6 @@ h2 {
   transition: all 0.3s;
 }
 
-.form__input--message {
-  margin-bottom: 1rem;
-}
-
-.form__header {
-  font-size: 1.8rem;
-  font-weight: bold;
-  text-align: center;
-  color: #f3f3f3;
-  text-shadow: 0 1px 5px rgba(0, 0, 0, 0.25);
-  margin: 0 0 2rem 0;
-}
-
 .form__input:focus {
   outline: none;
   background-color: rgba(255, 255, 255, 0.6);
@@ -579,7 +586,7 @@ h2 {
   text-align: center;
 }
 
-.form__btn {
+.btn {
   border: none;
   border-radius: 0.7rem;
   font-size: 1.8rem;
@@ -588,7 +595,7 @@ h2 {
   transition: all 0.3s;
 }
 
-.form__btn:focus {
+.btn:focus {
   outline: none;
   background-color: rgba(255, 255, 255, 0.8);
 }
@@ -628,7 +635,7 @@ h2 {
   margin-top: 2rem;
 }
 
-.form__message-popup {
+.modal {
   position: fixed;
   top: 0;
   left: 0;
@@ -639,7 +646,7 @@ h2 {
   transition: all .25s;
 }
 
-.form__message-popup__content {
+.modal__content {
   position: absolute;
   top: 50%;
   left: 50%;
@@ -654,6 +661,19 @@ h2 {
   border-radius: 12px;
   box-shadow: 0 2px 10px 5px rgba(0, 0, 0, .15);
   transition: all .25s;
+}
+
+.modal__heading {
+  font-size: 1.8rem;
+  font-weight: bold;
+  text-align: center;
+  color: #f3f3f3;
+  text-shadow: 0 1px 5px rgba(0, 0, 0, 0.25);
+  margin: 0 0 2rem 0;
+}
+
+.modal__input {
+  margin-bottom: 1rem;
 }
 
 #request-deadline {
