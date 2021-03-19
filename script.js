@@ -10,6 +10,9 @@ let notifications = true;
 // Account holder
 let currentAccount;
 
+// Timer
+let timer;
+
 // Error timeout
 let hideNotification;
 
@@ -18,6 +21,38 @@ let operationTransferState = false;
 
 // Requests counts for IDs
 let requestCount = 0;
+
+// Log out timer
+const startLogOutTimer = function() {
+  let time = 10 * 60 * 1000 / 1000;
+
+  const tick = function() {
+    const minutes = `${Math.trunc(time / 60)}`.padStart(2, 0);
+    const seconds = `${Math.trunc(time % 60)}`.padStart(2, 0);
+    labelTimer.textContent = `${minutes}:${seconds}`;
+
+    if (time === 0) {
+      clearInterval(logOutTimer);
+      logOut();
+    }
+
+    time--;
+  };
+
+
+  tick();
+  const logOutTimer = setInterval(tick, 1000);
+  return logOutTimer;
+};
+
+
+
+// Log out the user
+const logOut = function() {
+  labelWelcome.textContent = 'Log in to get started';
+  containerApp.style.visibility = 'hidden';
+  containerApp.style.opacity = '0';
+}
 
 // Date and time
 const getDate = function(time = false) {
@@ -93,6 +128,8 @@ const labelSumIn = document.querySelector('.summary__value--in');
 const labelSumOut = document.querySelector('.summary__value--out');
 const labelSumInterest = document.querySelector('.summary__value--interest');
 const labelTimer = document.querySelector('.timer');
+const btnSwitchCountContainer = document.querySelector('.movements__switch-count');
+const btnSwitchCountLabel = document.querySelector('.movements__switch-count > b');
 const btnSwitchLabel = document.querySelector('.movements__switch-text');
 const operationTransferHeading = document.querySelector('.operation--transfer > h2');
 const operationTransferFromLabel = document.querySelector('.operation--transfer .form__label');
@@ -184,10 +221,16 @@ const modifySwitchBtn = function(changeTo, runFunction = false) {
     btnSwitch.classList.add('movements__switch--movements');
     btnSwitch.classList.remove('movements__switch--requests');
     btnSwitchLabel.textContent = 'Movements';
+    btnSwitchCountLabel.textContent = currentAccount.movements.length;
+    btnSwitchCountContainer.classList.add('movements__switch-count--positive');
+    btnSwitchCountContainer.classList.remove('movements__switch-count--negative');
   } else if (changeTo === 1) {
     btnSwitch.classList.remove('movements__switch--movements');
     btnSwitch.classList.add('movements__switch--requests');
     btnSwitchLabel.textContent = 'Requests';
+    btnSwitchCountLabel.textContent = transferRequests.filter(req => req.from === currentAccount.owner || req.to === currentAccount.owner).length;
+    btnSwitchCountContainer.classList.add('movements__switch-count--negative');
+    btnSwitchCountContainer.classList.remove('movements__switch-count--positive');
   }
 
   if (runFunction) {
@@ -436,6 +479,9 @@ btnLogin.addEventListener('click', function(e) {
     containerApp.style.opacity = '1';
     containerApp.style.visibility = 'visible';
 
+    if(timer) clearInterval(timer);
+    timer = startLogOutTimer();
+
     // Display movements and stuff
     updateUI(0);
 
@@ -538,15 +584,17 @@ btnLoan.addEventListener('click', function(e) {
   const amount = Math.floor(inputLoanAmount.value);
 
   if (amount > 0 && currentAccount.movements.some(mov => mov >= amount * 0.1)) {
-    currentAccount.movements.push(amount);
+    setTimeout(() => {
+      currentAccount.movements.push(amount);
 
-    currentAccount.movsDesc.set(currentAccount.movements.length - 1, { source: 'Bank', date: getDate() });
+      currentAccount.movsDesc.set(currentAccount.movements.length - 1, { source: 'Bank', date: getDate() });
 
-    updateUI(0);
-    modifySwitchBtn(0);
-    inputLoanAmount.value = '';
+      updateUI(0);
+      modifySwitchBtn(0);
+      inputLoanAmount.value = '';
 
-    displayNotification(`Your request for ${formatMoney(amount)} loan has been approved!`, 'success');
+      displayNotification(`Your request for ${formatMoney(amount)} loan has been approved!`, 'success');
+    }, 4000);
   } else if (amount <= 0) {
     displayNotification('Requested amount must be at least 1€!');
   } else {
@@ -563,8 +611,7 @@ btnClose.addEventListener('click', function(e) {
     accounts.splice(index, 1);
 
     // Hide UI
-    containerApp.style.opacity = '0';
-    containerApp.style.visibility = 'hidden';
+    logOut();
 
     // Clear the fields
     inputCloseUsername.value = inputClosePin.value = '';

@@ -425,6 +425,34 @@ button:focus {
   text-transform: uppercase;
 }
 
+.movements__switch-count {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  width: 1rem;
+  padding: .5rem;
+  border-radius: 50%;
+  font-size: 1.1rem;
+  background-color: #fff;
+  box-sizing: content-box;
+  height: 1rem;
+  box-shadow: inset 0 0 5px 2px rgba(155, 295, 93, .25);
+}
+
+.movements__switch-count--positive > b {
+  background-image: radial-gradient(circle, #39b385, #9be15d);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.movements__switch-count--negative > b {
+  background-image: radial-gradient(circle, #e52a5a, #f5465d);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
 .movements__react-button-container {
   margin-left: auto;
 }
