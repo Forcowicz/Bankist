@@ -38,22 +38,4 @@ const account4 = {
   currency: 'EUR'
 };
 
-const account5 = {
-  owner: 'Sławomir Węglarz',
-  movements: [1300, -2000, 3900, 15020, 2],
-  interestRate: 1,
-  pin: 5555,
-  movsDesc: new Map([[0, {}], [1, {}], [2, { date: new Date('2021-03-07').toISOString() }], [3, { date: new Date('2021-03-16').toISOString() }], [4, { date: new Date('2021-03-16').toISOString() }]]),
-  currency: 'EUR'
-};
-
-const account6 = {
-  owner: 'Michał Wojtusiak',
-  movements: [300, -500, 100, 1, 20, -15, -300, 1337],
-  interestRate: 1,
-  pin: 5555,
-  movsDesc: new Map([[0, {}], [1, {}], [2, {}], [3, {}], [4, {}], [5, {}], [6, {}], [7, {}]]),
-  currency: 'EUR'
-};
-
-const accounts = [account1, account2, account3, account4, account5, account6];
+const accounts = [account1, account2, account3, account4];
