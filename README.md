@@ -15,9 +15,9 @@ It allows users to:
 
 #### Accounts
 
-> Username: js, PIN: 1111
-> Username: jd, PIN: 2222
-> Username: stw, PIN: 3333
+> Username: js, PIN: 1111<br>
+> Username: jd, PIN: 2222<br>
+> Username: stw, PIN: 3333<br>
 > Username: ss, PIN: 4444
 
 ### Log In / Accounts
