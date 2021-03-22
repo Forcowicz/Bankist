@@ -4,8 +4,19 @@
 /////////////////////////////////////////////////
 // BANKIST APP
 
+// Mutation observer
+const observer = new MutationObserver(mutation => {
+  if(mutation[0].target !== labelTimer) startLogOutTimer();
+});
+
+observer.observe(document.body, {
+  subtree: true,
+  childList: true,
+  attributes: true
+});
+
 // Display notifications
-let notifications = true;
+let alerts = true;
 
 // Account holder
 let currentAccount;
@@ -14,16 +25,21 @@ let currentAccount;
 let timer;
 
 // Error timeout
-let hideNotification;
+let hideAlert;
 
 // Is currently transfer or request operation visible
 let operationTransferState = false;
 
-// Requests counts for IDs
+// Requests counts  for IDs
 let requestCount = 0;
 
 // Log out timer
+
 const startLogOutTimer = function() {
+  if(timer) {
+    clearInterval(timer);
+  }
+
   let time = 10 * 60 * 1000 / 1000;
 
   const tick = function() {
@@ -32,29 +48,21 @@ const startLogOutTimer = function() {
     labelTimer.textContent = `${minutes}:${seconds}`;
 
     if (time === 0) {
-      clearInterval(logOutTimer);
+      clearInterval(setInterval(tick, 1000));
       logOut();
     }
 
     time--;
   };
 
-
   tick();
-  const logOutTimer = setInterval(tick, 1000);
-  return logOutTimer;
+  timer = setInterval(tick, 1000);
 };
 
-
-
-// Log out the user
-const logOut = function() {
-  labelWelcome.textContent = 'Log in to get started';
-  containerApp.style.visibility = 'hidden';
-  containerApp.style.opacity = '0';
-}
+// END OF Log out timer
 
 // Date and time
+
 const getDate = function(time = false) {
   const now = new Date();
   const day = `${now.getDate()}`.padStart(2, '0');
@@ -90,6 +98,10 @@ const formatMoney = function(money) {
   return new Intl.NumberFormat(navigator.language, options).format(money);
 }
 
+// END OF Date and time
+
+// Modal
+
 const modal = {
   container: document.querySelector('.modal'),
   heading: document.querySelector('.modal__heading'),
@@ -113,96 +125,66 @@ const modal = {
 modal.container.addEventListener('click', function(e) {
   if (e.target === modal.container) {
     this.classList.add('hidden');
-    clearTransferInputFields();
+    clearUserInputFields();
   }
 });
 
-// Data
-const transferRequests = [];
+// END OF Modal
 
-// Elements
-const labelWelcome = document.querySelector('.welcome');
-const labelDate = document.querySelector('.date');
-const labelBalance = document.querySelector('.balance__value');
-const labelSumIn = document.querySelector('.summary__value--in');
-const labelSumOut = document.querySelector('.summary__value--out');
-const labelSumInterest = document.querySelector('.summary__value--interest');
-const labelTimer = document.querySelector('.timer');
-const btnSwitchCountContainer = document.querySelector('.movements__switch-count');
-const btnSwitchCountLabel = document.querySelector('.movements__switch-count > b');
-const btnSwitchLabel = document.querySelector('.movements__switch-text');
-const operationTransferHeading = document.querySelector('.operation--transfer > h2');
-const operationTransferFromLabel = document.querySelector('.operation--transfer .form__label');
+// Alerts
 
-const containerApp = document.querySelector('.app');
-const containerMovements = document.querySelector('.movements__movs');
+const displayAlert = function(info, type = 'error', ignore) {
+  if (alerts || ignore) {
+    clearTimeout(hideAlert);
 
-const btnLogin = document.querySelector('.login__btn');
-const btnTransfer = document.querySelector('.form__btn--transfer');
-const btnTransferMessage = document.querySelector('.form__btn--transfer-message');
-const btnLoan = document.querySelector('.form__btn--loan');
-const btnClose = document.querySelector('.form__btn--close');
-const btnSort = document.querySelector('.btn--sort');
-const btnSwitch = document.getElementById('btn-switch');
-const btnFormSwitch = document.getElementById('switchOperations');
-const btnChangeCurrency = document.getElementById('change-currency-btn');
+    // Check the notification character
+    if (type === 'error') {
+      alert.classList.add('alert--error');
+      alert.classList.remove('alert--success');
+    } else {
+      alert.classList.add('alert--success');
+      alert.classList.remove('alert--error');
+    }
 
-const transferOperation = document.querySelector('.operation--transfer');
+    alert.classList.add('animation-pop');
+    alert.classList.remove('hidden');
+    labelAlert.textContent = info;
 
-const transferRequestForm = document.getElementById('request-deadline');
+    hideAlert = setTimeout(function() {
+      if (!alert.classList.contains('hidden')) {
+        alert.classList.add('hidden');
+        alert.classList.remove('animation-pop');
+      }
+    }, 7000);
+  }
+};
 
-const inputLoginUsername = document.querySelector('.login__input--user');
-const inputLoginPin = document.querySelector('.login__input--pin');
-const inputTransferTo = document.querySelector('.form__input--to');
-const inputTransferAmount = document.querySelector('.form__input--amount');
-const inputRequestDeadline = document.getElementById('form__input--deadline');
-const inputLoanAmount = document.querySelector('.form__input--loan-amount');
-const inputCloseUsername = document.querySelector('.form__input--user');
-const inputClosePin = document.querySelector('.form__input--pin');
-
-const notificationsSwitch = document.getElementById('notifications-switch');
-const notificationContainer = document.querySelector('.notification');
-const labelNotification = document.querySelector('.notification__info');
-const notificationBtnClose = document.querySelector('.notification__btn');
-
-// Notifications' switch
-notificationsSwitch.addEventListener('click', function() {
-  this.classList.toggle('notifications-switch-btn--active');
-  displayNotification(`Notifications turned ${notifications ? 'OFF' : 'ON'}.`, 'success', true);
-  notifications = !notifications;
+btnSwitchAlerts.addEventListener('click', function() {
+  this.classList.toggle('alert-switch__btn--active');
+  displayAlert(`Alerts turned ${alerts ? 'OFF' : 'ON'}.`, 'success', true);
+  alerts = !alerts;
 });
+
+// END OF Alerts
+
+// Others
 
 const stripTags = function(html) {
   let doc = new DOMParser().parseFromString(html, 'text/html');
   return doc.body.textContent || '';
 };
 
-const displayNotification = function(info, type = 'error', ignore) {
-  if (notifications || ignore) {
-    clearTimeout(hideNotification);
+const logOut = function() {
+  labelWelcome.textContent = 'Log in to get started';
+  containerApp.style.visibility = 'hidden';
+  containerApp.style.opacity = '0';
+}
 
-    // Check the notification character
-    if (type === 'error') {
-      notificationContainer.classList.add('notification--error');
-      notificationContainer.classList.remove('notification--success');
-    } else {
-      notificationContainer.classList.add('notification--success');
-      notificationContainer.classList.remove('notification--error');
-    }
+// END OF Others
 
-    notificationContainer.classList.add('pop');
-    notificationContainer.classList.remove('hidden');
-    labelNotification.textContent = info;
+// MAIN APP
 
-    hideNotification = setTimeout(function() {
-      if (!notificationContainer.classList.contains('hidden')) {
-        notificationContainer.classList.add('hidden');
-        notificationContainer.classList.remove('pop');
-      }
-    }, 7000);
-  }
-};
-
+// Create usernames for accounts
 const createUsernames = function(accs) {
   accs.forEach(function(account) {
     account.username = account.owner
@@ -215,31 +197,36 @@ const createUsernames = function(accs) {
 
 createUsernames(accounts);
 
-const modifySwitchBtn = function(changeTo, runFunction = false) {
+// ACTIONS
+
+// Changes appearance of the movements' switch button
+const modifyBtnSwitchActions = function(changeTo, runFunction = false) {
   // 0: Change to movements, 1: Change to requests, Other: Don't change
   if (changeTo === 0) {
-    btnSwitch.classList.add('movements__switch--movements');
-    btnSwitch.classList.remove('movements__switch--requests');
-    btnSwitchLabel.textContent = 'Movements';
-    btnSwitchCountLabel.textContent = currentAccount.movements.length;
-    btnSwitchCountContainer.classList.add('movements__switch-count--positive');
-    btnSwitchCountContainer.classList.remove('movements__switch-count--negative');
+    btnSwitchActions.classList.add('actions__switch--movements');
+    btnSwitchActions.classList.remove('actions__switch--requests');
+    btnSwitchActionsLabel.textContent = 'Movements';
+    btnSwitchActions_CountLabel.textContent = currentAccount.movements.length;
+    btnSwitchActions_CountContainer.classList.add('actions__switch-count--positive');
+    btnSwitchActions_CountContainer.classList.remove('actions__switch-count--negative');
   } else if (changeTo === 1) {
-    btnSwitch.classList.remove('movements__switch--movements');
-    btnSwitch.classList.add('movements__switch--requests');
-    btnSwitchLabel.textContent = 'Requests';
-    btnSwitchCountLabel.textContent = transferRequests.filter(req => req.from === currentAccount.owner || req.to === currentAccount.owner).length;
-    btnSwitchCountContainer.classList.add('movements__switch-count--negative');
-    btnSwitchCountContainer.classList.remove('movements__switch-count--positive');
+    btnSwitchActions.classList.remove('actions__switch--movements');
+    btnSwitchActions.classList.add('actions__switch--requests');
+    btnSwitchActionsLabel.textContent = 'Requests';
+    btnSwitchActions_CountLabel.textContent = transferRequests.filter(req => req.from === currentAccount.owner || req.to === currentAccount.owner).length;
+    btnSwitchActions_CountContainer.classList.add('actions__switch-count--negative');
+    btnSwitchActions_CountContainer.classList.remove('actions__switch-count--positive');
   }
 
+  // If the runFunction argument is 1, it will call the displayTransferRequests function
   if (runFunction) {
     changeTo === 0 ? displayMovements(currentAccount.movements) : displayTransferRequests(transferRequests);
   }
 };
 
-const toggleDescriptions = (type, i) => {
-  const details = document.querySelector(`#${type}${i} > .movements__details`);
+// Add descriptions to actions
+const addDescriptions = (type, i) => {
+  const details = document.querySelector(`#${type}${i} > .actions__details`);
   const movementDOM = document.querySelector(`#${type}${i}`);
   movementDOM.addEventListener('click', function() {
     if (Number.parseInt(details.style.maxHeight) > 0) {
@@ -253,7 +240,7 @@ const toggleDescriptions = (type, i) => {
 // This function creates DOM elements, displays movements
 const displayMovements = function(movements, sort = 0) {
   containerMovements.innerHTML = '';
-  modifySwitchBtn(0);
+  modifyBtnSwitchActions(0);
 
   let movs;
   switch (sort) {
@@ -273,23 +260,23 @@ const displayMovements = function(movements, sort = 0) {
     movementDescriptionObject.currentIndex = i;
     const type = value > 0 ? 'positive' : 'negative';
     const html = `
-      <div class="movements__row" id=movement${i}>
-        <div class='movements__main'>
-          <div class="movements__type movements__type--${type}">${i + 1} ${type === 'positive' ? 'deposit' : 'withdrawal'}</div>
-          <div class="movements__value movements__value--margin">${formatMoney(value)}</div>
+      <div class='actions__row' id='movement${i}'>
+        <div class='actions__overview'>
+          <div class='actions__type actions__type--${type}'>${i + 1} ${type === 'positive' ? 'deposit' : 'withdrawal'}</div>
+          <div class='actions__value actions__value--margin'>${formatMoney(value)}</div>
         </div>
-        <div class='movements__details'>
-          <div class='movements__details-row'>
-            <span class='movements__details-column'>${value > 0 ? 'From:' : 'To'}</span>
-            <span class='movements__details-column'>${movementDescriptionObject.source || 'N/A'}</span>
+        <div class='actions__details'>
+          <div class='actions__details-row'>
+            <span class='actions__details-column'>${value > 0 ? 'From:' : 'To'}</span>
+            <span class='actions__details-column'>${movementDescriptionObject.source || 'N/A'}</span>
           </div>
-          <div class='movements__details-row'>
-            <span class='movements__details-column'>Message:</span>
-            <span class='movements__details-column'>${movementDescriptionObject.message || 'N/A'}</span>
+          <div class='actions__details-row'>
+            <span class='actions__details-column'>Message:</span>
+            <span class='actions__details-column'>${movementDescriptionObject.message || 'N/A'}</span>
           </div>
-          <div class='movements__details-row'>
-            <span class='movements__details-column'>Sent:</span>
-            <span class='movements__details-column'>${formatDate(movementDescriptionObject.date) || 'N/A'}</span>
+          <div class='actions__details-row'>
+            <span class='actions__details-column'>Sent:</span>
+            <span class='actions__details-column'>${formatDate(movementDescriptionObject.date) || 'N/A'}</span>
           </div>
         </div>
       </div>
@@ -298,19 +285,20 @@ const displayMovements = function(movements, sort = 0) {
     containerMovements.insertAdjacentHTML('afterbegin', html);
 
     // Display descriptions
-    toggleDescriptions('movement', i);
+    addDescriptions('movement', i);
   });
 };
 
+// Set behavior of the react buttons for requests
 const setReactButtons = (request, i) => {
 
-  document.querySelector(`#request${i} .movements__react-button--decline`).addEventListener('click', function() {
+  document.querySelector(`#request${i} .actions__react-button--decline`).addEventListener('click', function() {
     removeRequest(request.id);
     updateUI(1);
   });
 
-  if (document.querySelector(`#request${i} .movements__react-button--accept`)) {
-    document.querySelector(`#request${i} .movements__react-button--accept`).addEventListener('click', function() {
+  if (document.querySelector(`#request${i} .actions__react-button--accept`)) {
+    document.querySelector(`#request${i} .actions__react-button--accept`).addEventListener('click', function() {
       const receiverAcc = accounts.find(acc => acc.owner === request.from);
 
       if (currentAccount.balance >= request.amount) {
@@ -320,29 +308,30 @@ const setReactButtons = (request, i) => {
         currentAccount.movsDesc.set(currentAccount.movements.length - 1, {
           source: receiverAcc.owner,
           message: `Request #${request.id} from ${request.sent}`,
-          date: '12-02-2021'
+          date: getDate(true)
         });
         receiverAcc.movsDesc.set(receiverAcc.movements.length - 1, {
           source: currentAccount.owner,
           message: `Request #${request.id} from ${request.sent}`,
-          date: '12-02-2021'
+          date: getDate(true)
         });
 
         removeRequest(request.id);
-        displayNotification(`Request accepted. You transfered ${formatMoney(request.amount)} to ${request.from}.`, 'success');
+        displayAlert(`Request accepted. You transfered ${formatMoney(request.amount)} to ${request.from}.`, 'success');
         updateUI(1);
       } else {
-        displayNotification(`You don't have enough money. Need ${formatMoney(request.amount - currentAccount.balance)} more.`);
+        displayAlert(`You don't have enough money. Need ${formatMoney(request.amount - currentAccount.balance)} more.`);
       }
     });
   }
 };
 
+// Create react buttons for requests
 const displayReactButtons = type => {
   if (type === 'positive') {
     return `
       <div class='movements-react-button-container'>
-         <button type='button' class='movements__react-button movements__react-button--decline'>
+         <button type='button' class='actions__react-button actions__react-button--decline'>
           <svg>
             <use xlink:href='sprite.svg#close-cross'></use>
           </svg>
@@ -352,12 +341,12 @@ const displayReactButtons = type => {
   } else {
     return `
       <div class='movements-react-button-container'>
-         <button type='button' class='movements__react-button movements__react-button--accept'>
+         <button type='button' class='actions__react-button actions__react-button--accept'>
           <svg>
             <use xlink:href='sprite.svg#check-mark'></use>
           </svg>
          </button>
-         <button type='button' class='movements__react-button movements__react-button--decline'>
+         <button type='button' class='actions__react-button actions__react-button--decline'>
           <svg>
             <use xlink:href='sprite.svg#close-cross'></use>
           </svg>
@@ -367,14 +356,15 @@ const displayReactButtons = type => {
   }
 };
 
+// Remove a request
 const removeRequest = id => transferRequests.splice(id, 1);
 
-// This function displays transfer requests with their descriptions in form of movements
+// Display transfer requests with their descriptions
 const displayTransferRequests = function(req, sort = 0) {
   const isExpiring = date => Math.floor(Math.abs(new Date(date) - new Date()) / (1000 * 60 * 60 * 24)) <= 7;
 
   containerMovements.innerHTML = '';
-  modifySwitchBtn(1);
+  modifyBtnSwitchActions(1);
 
   let requests = req.filter(request => request.to === currentAccount.owner || request.from === currentAccount.owner);
   switch (sort) {
@@ -390,29 +380,29 @@ const displayTransferRequests = function(req, sort = 0) {
     const type = currentAccount.owner === request.from ? 'positive' : 'negative';
     const source = request.from === currentAccount.owner ? 'to' : 'from';
     const html = `
-      <div class="movements__row ${isExpiring(request.deadline) ? 'movements__row--important' : ''}" id="request${i}">
-        <div class='movements__main'>
-          <div class='movements__type movements__type--${type}'>${i + 1} request</div>
-          <span class='movements__from'>${type === 'positive' ? 'To: ' : 'From: '}${type === 'positive' ? request.to : request.from}</span>
+      <div class='actions__row ${isExpiring(request.deadline) ? 'actions__row--important' : ''}' id='request${i}'>
+        <div class='actions__overview'>
+          <div class='actions__type actions__type--${type}'>${i + 1} request</div>
+          <span class='actions__from'>${type === 'positive' ? 'To: ' : 'From: '}${type === 'positive' ? request.to : request.from}</span>
           ${displayReactButtons(type)}
-          <div class='movements__value'>${formatMoney(request.amount)}</div>
+          <div class='actions__value'>${formatMoney(request.amount)}</div>
         </div>
-        <div class='movements__details'>
-          <div class='movements__details-row'>
-          <span class='movements__details-column'>${source}:</span>
-          <span class='movements__details-column'>${request[source] || 'N/A'}</span>
+        <div class='actions__details'>
+          <div class='actions__details-row'>
+          <span class='actions__details-column'>${source}:</span>
+          <span class='actions__details-column'>${request[source] || 'N/A'}</span>
           </div>
-          <div class='movements__details-row'>
-            <span class='movements__details-column'>Message:</span>
-            <span class='movements__details-column'>${request.message || 'N/A'}</span>
+          <div class='actions__details-row'>
+            <span class='actions__details-column'>Message:</span>
+            <span class='actions__details-column'>${request.message || 'N/A'}</span>
           </div>
-          <div class='movements__details-row'>
-            <span class='movements__details-column'>Sent:</span>
-            <span class='movements__details-column'>${formatDate(request.sent)}</span>
+          <div class='actions__details-row'>
+            <span class='actions__details-column'>Sent:</span>
+            <span class='actions__details-column'>${formatDate(request.sent)}</span>
           </div>
-          <div class='movements__details-row'>
-            <span class='movements__details-column'>Valid until:</span>
-            <span class='movements__details-column'>${request.deadline || 'Forever'}</span>
+          <div class='actions__details-row'>
+            <span class='actions__details-column'>Valid until:</span>
+            <span class='actions__details-column'>${request.deadline || 'Forever'}</span>
           </div>
       </div>
      </div>
@@ -421,12 +411,14 @@ const displayTransferRequests = function(req, sort = 0) {
     containerMovements.insertAdjacentHTML('afterbegin', html);
 
     // Display descriptions
-    toggleDescriptions('request', i);
+    addDescriptions('request', i);
 
+    // Set behavior of the react buttons
     setReactButtons(request, i);
   });
 };
 
+// Calculate and display the account's balance
 const calcDisplayBalance = function(acc) {
   acc.balance = acc.movements.reduce((acc, cur) => acc + cur, 0);
 
@@ -443,6 +435,7 @@ const calcDisplayBalance = function(acc) {
   labelDate.textContent = new Intl.DateTimeFormat(navigator.language, options).format(new Date());
 };
 
+// Calculate and display the summary
 const calcDisplaySummary = function(account) {
   const incomes = account.movements.filter(mov => mov > 0).reduce((acc, mov) => acc + mov, 0);
   labelSumIn.textContent = `${formatMoney(incomes)}`;
@@ -454,6 +447,7 @@ const calcDisplaySummary = function(account) {
   labelSumInterest.textContent = `${formatMoney(interest)}`;
 };
 
+// Update the user interface
 const updateUI = function(source) {
   // Source === 0 - display movements. Switch === 1 - display transfer requests
 
@@ -467,7 +461,11 @@ const updateUI = function(source) {
   calcDisplaySummary(currentAccount);
 };
 
-// Event handlers
+// END OF ACTIONS
+
+// OPERATIONS
+
+// Log in to the account
 btnLogin.addEventListener('click', function(e) {
   e.preventDefault();
 
@@ -479,8 +477,7 @@ btnLogin.addEventListener('click', function(e) {
     containerApp.style.opacity = '1';
     containerApp.style.visibility = 'visible';
 
-    if(timer) clearInterval(timer);
-    timer = startLogOutTimer();
+    startLogOutTimer();
 
     // Display movements and stuff
     updateUI(0);
@@ -490,13 +487,14 @@ btnLogin.addEventListener('click', function(e) {
     inputLoginUsername.blur();
     inputLoginPin.blur();
 
-    displayNotification(`Welcome, ${currentAccount.owner}!`, 'success');
+    displayAlert(`Welcome, ${currentAccount.owner}!`, 'success');
   } else {
-    displayNotification('Wrong credentials!');
+    displayAlert('Wrong credentials!');
   }
 });
 
-const getFormInputTransfer = function() {
+// Get data from the transfer's input fields
+const getUserInputForTransfer = function() {
   const receiverAcc = accounts.find(acc => acc.username === inputTransferTo.value);
   const amount = +inputTransferAmount.value;
   const message = stripTags(modal.input.value);
@@ -504,42 +502,47 @@ const getFormInputTransfer = function() {
   return [receiverAcc, amount, message, deadline];
 };
 
-const clearTransferInputFields = () => inputTransferTo.value = inputTransferAmount.value = modal.input.value = '';
+const clearUserInputFields = () => inputTransferTo.value = inputTransferAmount.value = modal.input.value = '';
 
+// First stage of transfering/requesting money - receiver and amount
 btnTransfer.addEventListener('click', function(e) {
   e.preventDefault();
 
-  const [receiverAcc, amount] = getFormInputTransfer();
+  const [receiverAcc, amount] = getUserInputForTransfer();
 
+  // Open and set the modal
   const openMessagePopup = () => {
-    modal.openModal('Enter a message', '', transferMessage);
+    if(operationTransferState) transferRequestForm.style.display = 'block';
+    modal.openModal('Enter a message', '', transferMoneyStageTwo);
   }
 
   // Get the context, if it's a transfer or a request
   const context = operationTransferState ? ['request', 'from'] : ['transfer', 'to'];
 
+  // Formal validation
   if (receiverAcc?.username && receiverAcc.username !== currentAccount.username && amount > 0 && currentAccount.balance >= amount) {
-    operationTransferState ? transferRequestForm.style.display = 'block' : transferRequestForm.style.display = 'none';
     openMessagePopup();
   } else if (!receiverAcc) {
-    displayNotification('The receiver account does not exist.');
+    displayAlert('The receiver account does not exist.');
   } else if (receiverAcc.username === currentAccount.username) {
-    displayNotification(`You cannot ${context[0]} money ${context[1]} yourself.`);
+    displayAlert(`You cannot ${context[0]} money ${context[1]} yourself.`);
   } else if (amount <= 0) {
-    displayNotification(`You have to ${context[0]} at least 1€.`);
+    displayAlert(`You have to ${context[0]} at least 1€.`);
   } else if (currentAccount.balance < amount) {
     if (operationTransferState) {
       openMessagePopup();
     } else {
-      displayNotification(`You don't have enough money. Need ${formatMoney(amount - currentAccount.balance)} more.`);
+      displayAlert(`You don't have enough money. Need ${formatMoney(amount - currentAccount.balance)} more.`);
     }
   }
 });
 
-const transferMessage = function() {
-  const [receiverAcc, amount, message, deadline] = getFormInputTransfer();
+const transferMoneyStageTwo = function() {
+  // Get user's input
+  const [receiverAcc, amount, message, deadline] = getUserInputForTransfer();
 
   if (message.length <= 25) {
+    // If it's a request, push a request object to the transferRequests array
     if (operationTransferState) {
       transferRequests.push({
         to: receiverAcc.owner,
@@ -550,8 +553,9 @@ const transferMessage = function() {
         deadline,
         id: requestCount++
       });
-      displayNotification(`You successfuly requested ${formatMoney(amount)} from ${receiverAcc.owner}!`, 'success');
+      displayAlert(`You successfuly requested ${formatMoney(amount)} from ${receiverAcc.owner}!`, 'success');
     } else {
+      // If it's a transfer, add movements and description to the current and receiver accounts
       currentAccount.movements.push(-amount);
       receiverAcc.movements.push(amount);
 
@@ -565,19 +569,22 @@ const transferMessage = function() {
         message,
         date: getDate()
       });
-      displayNotification(`You successfuly transfered ${formatMoney(amount)} to ${receiverAcc.owner}!`, 'success');
+      displayAlert(`You successfuly transfered ${formatMoney(amount)} to ${receiverAcc.owner}!`, 'success');
     }
   } else if (message.length > 25) {
-    displayNotification('Your message cannot be longer than 25 characters!');
+    displayAlert('Your message cannot be longer than 25 characters!');
   }
 
+  // Close modal and hide the deadline form
   modal.closeModal();
-  clearTransferInputFields();
-  modifySwitchBtn(0);
+  transferRequestForm.style.display = 'none';
+  clearUserInputFields();
+  modifyBtnSwitchActions(0);
   updateUI(operationTransferState ? 1 : 0);
-  modal.btn.removeEventListener('click', transferMessage);
+  modal.btn.removeEventListener('click', transferMoneyStageTwo);
 };
 
+// Get loan
 btnLoan.addEventListener('click', function(e) {
   e.preventDefault();
 
@@ -590,18 +597,19 @@ btnLoan.addEventListener('click', function(e) {
       currentAccount.movsDesc.set(currentAccount.movements.length - 1, { source: 'Bank', date: getDate() });
 
       updateUI(0);
-      modifySwitchBtn(0);
+      modifyBtnSwitchActions(0);
       inputLoanAmount.value = '';
 
-      displayNotification(`Your request for ${formatMoney(amount)} loan has been approved!`, 'success');
+      displayAlert(`Your request for ${formatMoney(amount)} loan has been approved!`, 'success');
     }, 4000);
   } else if (amount <= 0) {
-    displayNotification('Requested amount must be at least 1€!');
+    displayAlert('Requested amount must be at least 1€!');
   } else {
-    displayNotification(`The maximum loan you can take is ${formatMoney(currentAccount.movements.reduce((acc, mov) => mov > acc ? acc = mov : acc, 0) * 10)}!`);
+    displayAlert(`The maximum loan you can take is ${formatMoney(currentAccount.movements.reduce((acc, mov) => mov > acc ? acc = mov : acc, 0) * 10)}!`);
   }
 });
 
+// Close the account
 btnClose.addEventListener('click', function(e) {
   e.preventDefault();
 
@@ -616,14 +624,15 @@ btnClose.addEventListener('click', function(e) {
     // Clear the fields
     inputCloseUsername.value = inputClosePin.value = '';
 
-    displayNotification(`Your account, ${currentAccount.owner} has been successfuly deleted!`, 'success');
+    displayAlert(`Your account, ${currentAccount.owner} has been successfuly deleted!`, 'success');
   } else if (inputCloseUsername.value !== currentAccount.username) {
-    displayNotification('Wrong account username!');
+    displayAlert('Wrong account username!');
   } else if (+inputClosePin.value !== currentAccount.pin) {
-    displayNotification('Wrong PIN!');
+    displayAlert('Wrong PIN!');
   }
 });
 
+// Sorting controller
 let sorted = 0;
 btnSort.addEventListener('click', () => {
   switch (sorted) {
@@ -636,31 +645,42 @@ btnSort.addEventListener('click', () => {
     default:
       sorted = 0;
   }
-  btnSwitch.classList.contains('movements__switch--requests') ? displayTransferRequests(transferRequests, sorted) : displayMovements(currentAccount.movements, sorted);
+  btnSwitchActions.classList.contains('movements__switch--requests') ? displayTransferRequests(transferRequests, sorted) : displayMovements(currentAccount.movements, sorted);
 });
 
-btnSwitch.addEventListener('click', function() {
-  btnSwitch.classList.contains('movements__switch--movements') ? modifySwitchBtn(1, true) : modifySwitchBtn(0, true);
+// Actions' switch event listener
+btnSwitchActions.addEventListener('click', function() {
+  btnSwitchActions.classList.contains('actions__switch--movements') ? modifyBtnSwitchActions(1, true) : modifyBtnSwitchActions(0, true);
 });
 
-btnFormSwitch.addEventListener('click', function(e) {
+// Switch between money transfer and request
+btnTransferSwitch.addEventListener('click', function(e) {
   e.preventDefault();
 
   if (operationTransferState) {
-    operationTransferHeading.textContent = 'Transfer money';
+    operationTransferHeadingLabel.textContent = 'Transfer money';
     operationTransferFromLabel.textContent = 'Transfer to';
   } else {
-    operationTransferHeading.textContent = 'Request money';
+    operationTransferHeadingLabel.textContent = 'Request money';
     operationTransferFromLabel.textContent = 'Request from';
   }
-  transferOperation.classList.toggle('operation--request');
-  btnFormSwitch.classList.toggle('form__btn-switch--request');
+  operationTransfer.classList.toggle('operation--request');
+  btnTransferSwitch.classList.toggle('operation__form-btn-switch--request');
   operationTransferState = !operationTransferState;
 });
 
-// Error event listener
-notificationBtnClose.addEventListener('click', function() {
-  notificationContainer.classList.add('hidden');
-  notificationContainer.classList.remove('pop');
-  clearTimeout(hideNotification);
+// Alert event listener
+btnCloseAlert.addEventListener('click', function() {
+  alert.classList.add('hidden');
+  alert.classList.remove('animation-pop');
+  clearTimeout(hideAlert);
+});
+
+// Authors modal
+btnAuthors.addEventListener('click', function() {
+  authorsContainer.classList.remove('hidden');
+});
+
+authorsContainer.addEventListener('click', function(e) {
+  if(e.target === authorsContainer) authorsContainer.classList.add('hidden');
 });

@@ -7,11 +7,11 @@ const changeCurrency = function() {
 
   if(currency.length === 3 && currencyCodes.has(currency)) {
     currentAccount.currency = currency;
-    displayNotification(`Your currency has been changed to ${currency}.`, 'success');
+    displayAlert(`Your currency has been changed to ${currency}.`, 'success');
   } else if(currency.length !== 3) {
-    displayNotification('Currency code needs to be 3 characters long.');
+    displayAlert('Currency code needs to be 3 characters long.');
   } else if(!currencyCodes.has(currency)) {
-    displayNotification('This currency code is invalid.');
+    displayAlert('This currency code is invalid.');
   }
 
   modal.btn.removeEventListener('click', changeCurrency);
@@ -20,6 +20,6 @@ const changeCurrency = function() {
   updateUI(0);
 }
 
-btnChangeCurrency.addEventListener('click', () => {
+btnCurrencyChange.addEventListener('click', () => {
   modal.openModal('Enter a currency code', currentAccount.currency, changeCurrency);
 });
