@@ -34,7 +34,6 @@
 html {
   font-size: 62.5%;
   box-sizing: border-box;
-  overflow: hidden;
 }
 
 body {
@@ -43,7 +42,6 @@ body {
   background-color: var(--color-grey-light);
   height: 100vh;
   padding: 2rem;
-  overflow: hidden;
 }
 
 /* BUTTONS */
