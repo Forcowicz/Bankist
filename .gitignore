@@ -1,2 +1,7 @@
 .prettierrc
 .idea/
+style.min.css
+data.min.js
+changeCurrency.min.js
+main.min.js
+selectors.min.js
