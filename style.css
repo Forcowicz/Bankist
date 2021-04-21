@@ -42,6 +42,7 @@ body {
   background-color: var(--color-grey-light);
   height: 100vh;
   padding: 2rem;
+  font-size: 1.6rem;
 }
 
 /* BUTTONS */
@@ -789,10 +790,10 @@ h2 {
 }
 
 .floating-buttons-container {
+  position: fixed;
   display: flex;
   flex-direction: column;
   align-items: center;
-  position: absolute;
   left: 2rem;
   bottom: 1rem;
 }
@@ -808,5 +809,11 @@ h2 {
 
   to {
     transform: translate(-50%, 0);
+  }
+}
+
+@media only screen and (max-height: 45em) {
+  html {
+    min-height: 115%;
   }
 }
